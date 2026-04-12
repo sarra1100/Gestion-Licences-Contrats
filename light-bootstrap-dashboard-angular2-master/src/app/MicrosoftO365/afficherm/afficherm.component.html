@@ -1,0 +1,77 @@
+﻿<div class="master-detail-container">
+  <div class="header-row">
+    <h2>Licences MicrosoftO365</h2>
+    <div class="action-group">
+      <button (click)="goToAddmicrosoftO365()" class="btn btn-sm action-button"><i class="fa fa-plus"></i></button>
+      <div class="input-group search-box">
+        <input type="text" class="form-control" placeholder="Rechercher..." [(ngModel)]="searchTerm" (input)="onSearch()" />
+      </div>
+    </div>
+  </div>
+  <div class="md-layout" [class.detail-open]="selectedMicrosoftO365">
+    <div class="md-master">
+      <div class="md-list">
+        <div *ngFor="let x of pagedMicrosoftO365s" class="md-item"
+          [class.md-item-active]="selectedMicrosoftO365?.microsoftO365Id === x.microsoftO365Id" (click)="selectMicrosoftO365(x)">
+          <div class="md-item-info">
+            <div class="md-item-client">{{ x.client }}</div>
+            <div class="md-item-fields">
+              <span class="md-field"><strong>Durée :</strong> {{ x.dureeDeLicence || '-' }}</span>
+              <span *ngFor="let lic of x.licences" class="md-field"><strong>{{ lic.nomDesLicences }} :</strong> expire {{ lic.dateEx | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+          <div class="md-item-actions" (click)="$event.stopPropagation()">
+            <button class="md-btn-icon md-btn-view" (click)="selectMicrosoftO365(x)" title="Voir details"><i class="fas fa-eye"></i></button>
+            <button class="md-btn-icon md-btn-edit" (click)="updateMicrosoftO365(x)"><i class="fas fa-pen"></i></button>
+            <button class="md-btn-icon md-btn-delete" (click)="deleteMicrosoftO365(x.microsoftO365Id)"><i class="fas fa-trash"></i></button>
+            <button class="md-btn-icon md-btn-approve" (click)="approveMicrosoftO365(x.microsoftO365Id)"><i class="fas fa-check"></i></button>
+          </div>
+        </div>
+        <div *ngIf="pagedMicrosoftO365s.length === 0" class="md-empty"><i class="fas fa-folder-open"></i><p>Aucun MicrosoftO365 trouvé.</p></div>
+      </div>
+      <div class="md-pagination" *ngIf="totalPages > 1">
+        <button *ngFor="let page of pageNumbers; let i = index" (click)="changePage(i)" [class.active]="i === currentPage" class="btn btn-sm btn-outline-primary mx-1">{{ i + 1 }}</button>
+      </div>
+    </div>
+    <div class="md-detail" *ngIf="selectedMicrosoftO365">
+      <div class="md-detail-card">
+        <div class="md-detail-header"><h4>{{ selectedMicrosoftO365.client }}</h4><button class="md-detail-close" (click)="closeDetail()">&times;</button></div>
+        <div class="md-detail-body">
+          <div class="md-detail-section-title">Licence</div>
+          <div class="md-detail-row"><span class="md-label">Durée</span><span class="md-value">{{ selectedMicrosoftO365.dureeDeLicence || '-' }}</span></div>
+          
+          <div class="md-detail-divider"></div>
+          <div class="md-detail-section-title">Licences</div>
+          <div *ngFor="let lic of selectedMicrosoftO365.licences" class="licence-block">
+            <div class="md-detail-row"><span class="md-label">Licence</span><span class="md-value">{{ lic.nomDesLicences }}</span></div>
+            <div class="md-detail-row"><span class="md-label">Quantité</span><span class="md-value">{{ lic.quantite }}</span></div>
+            <div class="md-detail-row"><span class="md-label">Expiration</span><span class="md-value">{{ lic.dateEx | date:'dd/MM/yyyy' }}</span></div>
+          </div>
+          <div class="md-detail-divider"></div>
+          <div class="md-detail-section-title">Contact Client</div>
+          <div class="md-detail-row"><span class="md-label">Nom contact</span><span class="md-value">{{ selectedMicrosoftO365.nomDuContact || '-' }}</span></div>
+          <div class="md-detail-row"><span class="md-label">N° Téléphone</span><span class="md-value">{{ selectedMicrosoftO365.numero || '-' }}</span></div>
+          <div class="md-detail-row"><span class="md-label">Email client</span><span class="md-value">{{ selectedMicrosoftO365.adresseEmailContact || '-' }}</span></div>
+          <div class="md-detail-row"><span class="md-label">Email Commercial</span><span class="md-value">{{ selectedMicrosoftO365.mailAdmin || '-' }}</span></div>
+          <div class="md-detail-row"><span class="md-label">CC Mail</span><span class="md-value">{{ selectedMicrosoftO365.ccMail || '-' }}</span></div>
+          <div class="md-detail-row"><span class="md-label">Sous Contrat</span><span class="md-value"><span [class]="selectedMicrosoftO365.sousContrat ? 'md-badge md-badge-green' : 'md-badge md-badge-gray'">{{ selectedMicrosoftO365.sousContrat ? 'Oui' : 'Non' }}</span></span></div>
+          <div class="md-detail-row"><span class="md-label">Remarque</span><span class="md-value">{{ selectedMicrosoftO365.remarque || '-' }}</span></div>
+          <div class="md-detail-row"><span class="md-label">Commande par</span><span class="md-value">{{ getCommandePasserParLabel(selectedMicrosoftO365.commandePasserPar) || '-' }}</span></div>
+          <div class="md-detail-row" *ngIf="selectedMicrosoftO365.fichierOriginalName">
+            <span class="md-label">Fichier</span><span class="md-value"><a [href]="getFileDownloadUrl(selectedMicrosoftO365.microsoftO365Id)" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fa fa-download"></i> {{ selectedMicrosoftO365.fichierOriginalName }}</a></span>
+          </div>
+          <div class="md-detail-divider"></div>
+          <div class="md-detail-actions">
+            <button (click)="updateMicrosoftO365(selectedMicrosoftO365)" class="btn btn-sm btn-primary"><i class="fas fa-pen"></i> Modifier</button>
+            <button (click)="deleteMicrosoftO365(selectedMicrosoftO365.microsoftO365Id)" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Supprimer</button>
+            <button (click)="approveMicrosoftO365(selectedMicrosoftO365.microsoftO365Id)" class="btn btn-sm btn-success"><i class="fas fa-check"></i> Approuver</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+

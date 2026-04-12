@@ -1,0 +1,539 @@
+<div class="master-detail-container">
+  <!-- En-tête -->
+  <div class="header-row">
+    <h2>Licences ESET</h2>
+    <div class="action-group">
+      <button (click)="goToProducts()" class="btn btn-sm action-button">
+        <i class="fa fa-plus"></i>
+      </button>
+      <div class="input-group search-box">
+        <input type="text" class="form-control" placeholder="Rechercher..." [(ngModel)]="searchTerm"
+          (input)="onSearch()" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout Master / Detail -->
+  <div class="md-layout" [class.detail-open]="selectedEset">
+
+    <!-- ── MASTER : liste de mini-cartes ── -->
+    <div class="md-master">
+      <div class="md-list">
+        <div *ngFor="let eset of pagedEsets" class="md-item"
+          [class.md-item-active]="selectedEset?.esetid === eset.esetid">
+
+          <!-- Infos principales visibles dans la card -->
+          <div class="md-item-info">
+            <div class="md-item-client">{{ eset.client }}</div>
+            <div class="md-item-fields">
+              <span class="md-field"><strong>Identifiant :</strong> {{ eset.identifiant || '-' }}</span>
+              <span class="md-field"><strong>Clé de Licence :</strong> {{ eset.cle_de_Licence || '-' }}</span>
+              <span class="md-field"><strong>Produit :</strong> {{ getProductName(eset.nom_produit) }}</span>
+              <span class="md-field"><strong>Expiration :</strong> {{ eset.dateEx | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+
+          <!-- Actions : œil + modifier + supprimer + approuver en colonne -->
+          <div class="md-item-actions" (click)="$event.stopPropagation()">
+            <button class="md-btn-icon md-btn-view" (click)="selectEset(eset)" title="Voir détails">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="md-btn-icon md-btn-edit" (click)="updateEset(eset)" title="Modifier">
+              <i class="fas fa-pen"></i>
+            </button>
+            <button class="md-btn-icon md-btn-delete" (click)="deleteEset(eset.esetid)" title="Supprimer">
+              <i class="fas fa-trash"></i>
+            </button>
+            <button class="md-btn-icon md-btn-approve" (click)="aprouve(eset.esetid)" title="Expirer">
+              <i class="fas fa-check"></i>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="pagedEsets.length === 0" class="md-empty">
+          <i class="fas fa-folder-open"></i>
+          <p>Aucune licence ESET trouvée.</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="md-pagination" *ngIf="totalPages > 1">
+        <button *ngFor="let page of pageNumbers; let i = index" (click)="changePage(i)"
+          [class.active]="i === currentPage" class="btn btn-sm btn-outline-primary mx-1">
+          {{ i + 1 }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ── DETAIL : panneau droit ── -->
+    <div class="md-detail" *ngIf="selectedEset">
+      <div class="md-detail-card">
+        <!-- Header -->
+        <div class="md-detail-header">
+          <h4>{{ selectedEset.client }}</h4>
+          <button class="md-detail-close" (click)="closeDetail()">&times;</button>
+        </div>
+
+        <!-- Body -->
+        <div class="md-detail-body">
+
+          <!-- Informations Licence -->
+          <div class="md-detail-section-title">Informations Licence</div>
+          <div class="md-detail-row">
+            <span class="md-label">Produit</span>
+            <span class="md-value">
+              <span class="md-badge md-badge-orange">{{ getProductName(selectedEset.nom_produit) }}</span>
+            </span>
+          </div>
+          <div class="md-detail-row">
+            <span class="md-label">Identifiant</span>
+            <span class="md-value">{{ selectedEset.identifiant || '-' }}</span>
+          </div>
+          <div class="md-detail-row">
+            <span class="md-label">Clé de Licence</span>
+            <span class="md-value">{{ selectedEset.cle_de_Licence || '-' }}</span>
+          </div>
+          <div class="md-detail-row">
+            <span class="md-label">Durée</span>
+            <span class="md-value">{{ selectedEset.dureeDeLicence || '-' }}</span>
+          </div>
+          <div class="md-detail-row">
+            <span class="md-label">Date d'Expiration</span>
+            <span class="md-value">{{ selectedEset.dateEx | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="md-detail-row">
+            <span class="md-label">Type d'Achat</span>
+            <span class="md-value">{{ getTypeAchatName(selectedEset.typeAchat) }}</span>
+          </div>
+          <div class="md-detail-row">
+            <span class="md-label">Nombre</span>
+            <span class="md-value">{{ selectedEset.nombre }}</span>
+          </div>
+          <div class="md-detail-row">
+            <span class="md-label">Sous Contrat</span>
+            <span class="md-value">
+              <span [class]="selectedEset.sousContrat ? 'md-badge md-badge-green' : 'md-badge md-badge-gray'">
+                {{ selectedEset.sousContrat ? 'Oui' : 'Non' }}
+              </span>
+            </span>
+          </div>
+          <div class="md-detail-row">
+            <span class="md-label">Commande par</span>
+            <span class="md-value">{{ getCommandePasserParLabel(selectedEset.commandePasserPar) || '-' }}</span>
+          </div>
+
+          <div class="md-detail-divider"></div>
+
+          <!-- Vis-à-Vis Client -->
+          <div class="md-detail-section-title">Vis-a-Vis Client</div>
+          <div class="md-detail-row">
+            <span class="md-label">Vis-a-Vis Client</span>
+            <span class="md-value">{{ selectedEset.nom_contact || '-' }}</span>
+          </div>
+          <div class="md-detail-row">
+            <span class="md-label">N° Telephone Client</span>
+            <span class="md-value">{{ selectedEset.nmb_tlf || '-' }}</span>
+          </div>
+          <div class="md-detail-row">
+            <span class="md-label">Adresse Mail Client</span>
+            <span class="md-value">{{ selectedEset.mail || '-' }}</span>
+          </div>
+          <div class="md-detail-row">
+            <span class="md-label">Email Commercial</span>
+            <span class="md-value">{{ selectedEset.mailAdmin || '-' }}</span>
+          </div>
+          <div class="md-detail-row">
+            <span class="md-label">CC Mail</span>
+            <span class="md-value">{{ selectedEset.ccMail || '-' }}</span>
+          </div>
+
+          <div class="md-detail-divider"></div>
+
+          <!-- Remarque & Fichier -->
+          <div class="md-detail-row" *ngIf="selectedEset.remarque">
+            <span class="md-label">Remarque</span>
+            <span class="md-value">{{ selectedEset.remarque }}</span>
+          </div>
+
+          <div class="md-detail-row" *ngIf="selectedEset.fichier">
+            <span class="md-label">Fichier</span>
+            <span class="md-value">
+              <a [href]="getFileDownloadUrlById(selectedEset.esetid)" target="_blank"
+                class="btn btn-sm btn-outline-primary">
+                <i class="fa fa-download"></i> {{ selectedEset.fichierOriginalName || 'Télécharger' }}
+              </a>
+            </span>
+          </div>
+
+          <div class="md-detail-divider"></div>
+
+          <!-- Actions -->
+          <div class="md-detail-actions">
+            <button (click)="updateEset(selectedEset)" class="btn btn-sm btn-primary">
+              <i class="fas fa-pen"></i> Modifier
+            </button>
+            <button (click)="deleteEset(selectedEset.esetid)" class="btn btn-sm btn-danger">
+              <i class="fas fa-trash"></i> Supprimer
+            </button>
+            <button (click)="aprouve(selectedEset.esetid)" class="btn btn-sm btn-success">
+              <i class="fas fa-check"></i> Expirer
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════ MODAL AJOUTER ESET ════════════════════ -->
+<div class="modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-section">
+        <i class="fas fa-certificate modal-icon"></i>
+        <h4>Ajouter une nouvelle ESET</h4>
+      </div>
+      <button type="button" class="close-btn" (click)="closeAddModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Incorporation du ProductComponent -->
+      <app-products (productAdded)="onProductAdded()" (cancelled)="onProductCancelled()"></app-products>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ MODAL MODIFIER ESET ════════════════════ -->
+<div class="modal-overlay" *ngIf="showUpdateModal" (click)="onUpdateCancelled()">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-section">
+        <i class="fas fa-edit modal-icon"></i>
+        <h4>Modifier ESET</h4>
+      </div>
+      <button type="button" class="close-btn" (click)="onUpdateCancelled()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Incorporation du UpdateEsetComponent -->
+      <app-update-eset [esetToEdit]="selectedEsetToUpdate!" (updated)="onEsetUpdated()" (cancelled)="onUpdateCancelled()"></app-update-eset>
+    </div>
+  </div>
+</div>
+
+<style>
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7));
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideInUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes slideInUp {
+    from {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .modal-content.modal-lg {
+    max-width: 750px;
+    width: 95%;
+  }
+
+  .modal-header {
+    padding: 2rem;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px 12px 0 0;
+  }
+
+  .modal-title-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .modal-icon {
+    font-size: 1.8rem;
+    color: white;
+  }
+
+  .modal-header h4 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: white;
+    letter-spacing: 0.3px;
+  }
+
+  .close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: white;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+  }
+
+  .modal-body {
+    padding: 2rem;
+    background: #fafbfc;
+  }
+
+  /* ══════════════════ STYLISATION DU FORMULAIRE ══════════════════ */
+  
+  .modal-body ::ng-deep .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-body ::ng-deep label {
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.7rem;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .modal-body ::ng-deep label .text-danger {
+    color: #ff6b6b;
+  }
+
+  .modal-body ::ng-deep .form-control,
+  .modal-body ::ng-deep select {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: all 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+    background: white;
+    color: #333;
+  }
+
+  .modal-body ::ng-deep .form-control:focus,
+  .modal-body ::ng-deep select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 4px 12px rgba(102, 126, 234, 0.15);
+    outline: none;
+    background: #f9fbfd;
+  }
+
+  .modal-body ::ng-deep input[type="checkbox"] {
+    width: 1.3rem;
+    height: 1.3rem;
+    cursor: pointer;
+    accent-color: #667eea;
+  }
+
+  .modal-body ::ng-deep .form-check-label {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .modal-body ::ng-deep .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .modal-body ::ng-deep .form-row .form-group:only-child {
+    grid-column: span 2;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .modal-body ::ng-deep .form-row {
+      grid-template-columns: 1fr;
+    }
+
+    .modal-body ::ng-deep .form-row .form-group:only-child {
+      grid-column: span 1;
+    }
+  }
+
+  /* ══════════════════ STYLISATION DES BOUTONS ══════════════════ */
+
+  .modal-body ::ng-deep .btn {
+    border-radius: 8px;
+    padding: 0.75rem 1.8rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .modal-body ::ng-deep .btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .modal-body ::ng-deep .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .modal-body ::ng-deep .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .modal-body ::ng-deep .btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #5568d3 0%, #64398a 100%);
+  }
+
+  .modal-body ::ng-deep .btn-secondary {
+    background: #f0f3f7;
+    color: #333;
+    border: 1px solid #e0e0e0;
+  }
+
+  .modal-body ::ng-deep .btn-secondary:hover {
+    background: #e8ecf3;
+    border-color: #667eea;
+  }
+
+  .modal-body ::ng-deep .btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .modal-body ::ng-deep .btn-danger {
+    background: #ff6b6b;
+    color: white;
+  }
+
+  .modal-body ::ng-deep .btn-danger:hover:not(:disabled) {
+    background: #ff5252;
+  }
+
+  /* ══════════════════ MESSAGES D'ERREUR ══════════════════ */
+
+  .modal-body ::ng-deep .text-danger {
+    color: #ff6b6b;
+    font-size: 0.8rem;
+    margin-top: 0.4rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .modal-body ::ng-deep .text-danger::before {
+    content: "⚠";
+    font-size: 0.9rem;
+  }
+
+  /* ══════════════════ SECTIONS ET HEADINGS ══════════════════ */
+
+  .modal-body ::ng-deep h5 {
+    color: #667eea;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin: 1.5rem 0 1rem 0;
+    padding-bottom: 0.7rem;
+    border-bottom: 2px solid #667eea;
+  }
+
+  /* ══════════════════ ARRAY DE MAILS ══════════════════ */
+
+  .modal-body ::ng-deep [formArrayName] .form-row {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #f0f0f0;
+    margin-bottom: 0.8rem;
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-end;
+  }
+
+  .modal-body ::ng-deep [formArrayName] .form-row input {
+    flex: 1;
+  }
+
+  .modal-body ::ng-deep [formArrayName] .form-row .btn-danger {
+    padding: 0.6rem 0.9rem;
+  }
+
+  /* ══════════════════ SCROLLBAR ══════════════════ */
+
+  .modal-content::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  .modal-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+  }
+
+  .modal-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #64398a 100%);
+  }
+</style>

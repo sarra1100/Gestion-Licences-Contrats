@@ -1,0 +1,225 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  color: #1a204c;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.form-control {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 12px 15px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+
+  &:focus {
+    border-color: #f36e24;
+    outline: none;
+    box-shadow: 0 0 5px rgba(243, 110, 36, 0.3);
+  }
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-check-input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.form-check-label {
+  font-size: 1rem;
+  color: #333;
+  cursor: pointer;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.text-danger {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 5px;
+}
+
+.btn-primary {
+  background-color: #f36e24;
+  border-color: #f36e24;
+  color: white;
+  padding: 12px 30px;
+  font-size: 1rem;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #d55a1a;
+    border-color: #d55a1a;
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    border-color: #ccc;
+    cursor: not-allowed;
+  }
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+  padding: 12px 30px;
+  font-size: 1rem;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #5a6268;
+    border-color: #5a6268;
+  }
+}
+
+.d-flex {
+  display: flex;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+.mt-4 {
+  margin-top: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+    margin: 10px;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+}
+
+/* ── Champ grise quand Renouvelable est coche ── */
+.field-grayed {
+  input[type="date"],
+  .form-control {
+    background-color: #e9ecef !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    border-color: #ced4da !important;
+    pointer-events: none;
+    opacity: 0.75;
+  }
+
+  label {
+    color: #999;
+  }
+}
+
+/* Force gris sur input date desactive (certains navigateurs ignorent :disabled) */
+input[type="date"]:disabled,
+input[type="date"][disabled] {
+  background-color: #e9ecef !important;
+  color: #6c757d !important;
+  cursor: not-allowed !important;
+  border-color: #ced4da !important;
+  opacity: 0.75;
+}
+
+/* Badge "Non applicable" */
+.badge-gris {
+  display: inline-block;
+  background: #dee2e6;
+  color: #6c757d;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+/* -- Boutons duree rapide -- */
+.quick-duration-btns {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.quick-label {
+  font-size: 0.8rem;
+  color: #888;
+  font-weight: 500;
+  margin-right: 2px;
+}
+
+.btn-duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border: 1.5px solid #dee2e6;
+  border-radius: 20px;
+  background: #fff;
+  color: #555;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  outline: none;
+}
+
+.btn-duration:hover {
+  border-color: #f36e24;
+  color: #f36e24;
+  background: #fff8f4;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(243, 110, 36, 0.15);
+}
+
+.btn-duration-main {
+  border-color: #f36e24 !important;
+  background: #f36e24 !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+.btn-duration-main:hover {
+  background: #d55a1a !important;
+  border-color: #d55a1a !important;
+}
