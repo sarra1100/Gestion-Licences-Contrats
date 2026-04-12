@@ -1,6 +1,7 @@
 import { TypeAchat } from './../Model/TypeAchat';
 import { EsetService } from './../Services/eset.service';
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { ProduitService, Produit } from './../Services/produit.service';
+import { Component, OnInit, Output, EventEmitter, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Eset } from 'app/Model/Eset';
@@ -19,8 +20,19 @@ export class ProductsComponent implements OnInit {
   @Output() cancelled = new EventEmitter<void>();
   
   clients: Client[] = [];
+  produitsFromApi: Produit[] = [];
+  currentUserRole: string | null = null;
 
   productForm!: FormGroup;
+  addProduitForm!: FormGroup;
+  showAddProduitForm: boolean = false;
+  productAddMessage: string | null = null;
+  productAddSuccess: boolean = false;
+  
+  // Variables pour le modal simple d'ajout de produit
+  showQuickAddProduit: boolean = false;
+  quickProduitName: string = '';
+  quickProduitError: string = '';
   
   // Variables pour l'upload de fichier
   selectedFile: File | null = null;
@@ -37,44 +49,67 @@ export class ProductsComponent implements OnInit {
     { value: TypeAchat.LICENCE_GRATUIT, display: 'Licence Gratuit' }
   ];
   
-  // CORRECTION: Utilisez les mêmes noms que dans l'enum backend
-  nomProduitOptions = [
-  { value: NomProduit.eset_protect_entry, display: 'ESET PROTECT Entry' },
-  { value: NomProduit.eset_protect_entry_on_prem, display: 'ESET PROTECT Entry On-Prem' },
-  { value: NomProduit.eset_protect_advanced, display: 'ESET PROTECT Advanced' },
-  { value: NomProduit.eset_protect_advanced_on_prem, display: 'ESET PROTECT Advanced On-Prem' },
-  { value: NomProduit.eset_protect_essential, display: 'ESET PROTECT Essential' },
-  { value: NomProduit.eset_protect_essential_on_prem, display: 'ESET PROTECT Essential On-Prem' },
-  { value: NomProduit.eset_protect_essential_plus_on_prem, display: 'ESET PROTECT Essential Plus On-Prem' }, // CORRIGÉ
-  { value: NomProduit.eset_protect_enterprise_on_prem, display: 'ESET PROTECT Enterprise On-Prem' },
-  { value: NomProduit.eset_home_security_essential, display: 'Eset Home Security Essential' },
-  { value: NomProduit.eset_protect_enterprise, display: 'Eset Protect Enterprise' },
-  { value: NomProduit.eset_endpoint_encryption, display: 'Eset Endpoint Encryption' },
-  { value: NomProduit.eset_endpoint_encryption_pro, display: 'Eset Endpoint Encryption Pro' },
-  { value: NomProduit.eset_mail_security, display: 'Eset Mail Security' },
-  { value: NomProduit.eset_smart_security_premium, display: 'Eset Smart Security Premium' },
-  { value: NomProduit.eset_secure_authentication, display: 'Eset Secure Authentication' }, // CORRIGÉ
-  { value: NomProduit.eset_internet_security, display: 'Eset Internet Security' },
-  { value: NomProduit.eset_server_security, display: 'Eset Server Security' },
-  { value: NomProduit.eset_protect_mail_plus, display: 'Eset Protect Mail Plus' },
-  { value: NomProduit.eset_protect_complete, display: 'Eset Protect Complete' }
-];
+  // Propriétés dynamiques qui seront remplies depuis l'API
+  nomProduitOptions: { value: any; display: string }[] = [];
+  showProductDropdown: boolean = false;
   commandePasserParOptions = [
     { label: 'GI_TN', value: CommandePasserPar.GI_TN },
     { label: 'GI_FR', value: CommandePasserPar.GI_FR },
     { label: 'GI_CI', value: CommandePasserPar.GI_CI }
   ];
 
+  @ViewChild('productDropdownWrapper') productDropdownWrapper: ElementRef;
+
   constructor(private fb: FormBuilder, 
               private router: Router,
               private esetService: EsetService,
-    private clientService: ClientService) { }
+              private clientService: ClientService,
+              private produitService: ProduitService,
+              private elementRef: ElementRef) { }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.showProductDropdown) {
+      const clickedInside = this.elementRef.nativeElement.contains(event.target);
+      if (!clickedInside) {
+        this.showProductDropdown = false;
+      }
+    }
+  }
 
   ngOnInit(): void {
     this.initForm();
+    
+    // Charger les clients
     this.clientService.getAllClients().subscribe(data => {
       this.clients = data;
     });
+
+    // Charger les produits depuis l'API
+    this.produitService.getAllProduitsActifs().subscribe(
+      (produits) => {
+        this.produitsFromApi = produits;
+        // Convertir au format needed pour la liste déroulante
+        this.nomProduitOptions = produits.map(p => ({
+          value: p.code,
+          display: p.label
+        }));
+      },
+      (error) => {
+        console.error('Erreur lors du chargement des produits', error);
+      }
+    );
+
+    // Récupérer le rôle de l'utilisateur depuis localStorage
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        this.currentUserRole = user.role || user.userRole;
+      } catch (e) {
+        console.error('Erreur parsing user:', e);
+      }
+    }
 
     // Auto-remplissage quand un client est selectionne
     this.productForm.get('client')!.valueChanges.subscribe(selectedName => {
@@ -112,6 +147,125 @@ export class ProductsComponent implements OnInit {
       ]),
       concernedPersonsEmails: this.fb.array([])
     });
+
+    // Formulaire pour ajouter un nouveau produit (admins seulement)
+    this.addProduitForm = this.fb.group({
+      code: ['', [Validators.required, Validators.minLength(3)]],
+      label: ['', [Validators.required, Validators.minLength(3)]],
+      description: ['']
+    });
+  }
+
+  /**
+   * Vérifie si l'utilisateur est administrateur
+   */
+  isAdmin(): boolean {
+    return this.currentUserRole === 'ROLE_ADMINISTRATEUR';
+  }
+
+  /**
+   * Sélectionne un produit dans le dropdown personnalisé
+   */
+  selectProduct(productCode: string): void {
+    this.productForm.patchValue({ nom_produit: productCode });
+  }
+
+  /**
+   * Supprime un produit spécifique par son code
+   */
+  deleteProduct(productCode: string): void {
+    // Trouver le produit à supprimer
+    const produitToDelete = this.produitsFromApi.find(p => p.code === productCode);
+    if (!produitToDelete || !produitToDelete.id) {
+      alert('Produit non trouvé');
+      return;
+    }
+
+    // Confirmation
+    const confirmed = confirm(`Êtes-vous sûr de vouloir supprimer le produit "${produitToDelete.label}" ?`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.produitService.desactiverProduit(produitToDelete.id).subscribe(
+      (response) => {
+        console.log('Produit supprimé avec succès', response);
+        
+        // Recharger la liste des produits
+        this.produitService.rechargerProduits();
+        
+        // Rafraîchir les options du dropdown
+        this.produitService.getAllProduitsActifs().subscribe(
+          (produits) => {
+            this.produitsFromApi = produits;
+            this.nomProduitOptions = produits.map(p => ({
+              value: p.code,
+              display: p.label
+            }));
+          }
+        );
+      },
+      (error) => {
+        console.error('Erreur lors de la suppression', error);
+        alert('Erreur lors de la suppression du produit');
+      }
+    );
+  }
+
+  /**
+   * Bascule l'affichage du formulaire d'ajout de produit
+   */
+  toggleAddProduitForm(): void {
+    this.showAddProduitForm = !this.showAddProduitForm;
+    if (!this.showAddProduitForm) {
+      this.addProduitForm.reset();
+      this.productAddMessage = null;
+    }
+  }
+
+  /**
+   * Ajoute un nouveau produit à la BD
+   */
+  addNewProduit(): void {
+    if (this.addProduitForm.valid) {
+      const newProduit: Produit = {
+        code: this.addProduitForm.value.code.trim(),
+        label: this.addProduitForm.value.label.trim(),
+        description: this.addProduitForm.value.description?.trim() || '',
+        actif: true
+      };
+
+      this.produitService.addProduit(newProduit).subscribe(
+        (response) => {
+          console.log('Produit ajouté avec succès', response);
+          this.productAddSuccess = true;
+          this.productAddMessage = `Produit "${response.label}" ajouté avec succès!`;
+          this.addProduitForm.reset();
+          setTimeout(() => {
+            this.showAddProduitForm = false;
+            this.productAddMessage = null;
+          }, 2000);
+          // Les produits sont rechargés automatiquement via le service
+        },
+        (error) => {
+          console.error("Erreur lors de l'ajout du produit", error);
+          this.productAddSuccess = false;
+          this.productAddMessage = `Erreur: ${error.error?.message || "Impossible d'ajouter le produit"}`;
+        }
+      );
+    } else {
+      this.productAddSuccess = false;
+      this.productAddMessage = 'Veuillez remplir tous les champs obligatoires';
+    }
+  }
+
+  /**
+   * Annule l'ajout d'un produit
+   */
+  cancelAddProduit(): void {
+    this.showAddProduitForm = false;
+    this.addProduitForm.reset();
+    this.productAddMessage = null;
   }
 
   get concernedPersonsEmails(): FormArray {
@@ -128,10 +282,29 @@ export class ProductsComponent implements OnInit {
     this.concernedPersonsEmails.removeAt(index);
   }
 
+  /**
+   * Convertit un code produit en valeur d'enum NomProduit
+   */
+  private convertCodeToNomProduit(code: string): NomProduit {
+    // Convertir le code (ex: ESET_PROTECT_ENTRY) en enum (ex: eset_protect_entry)
+    return (code.toLowerCase() as NomProduit);
+  }
+
+  /**
+   * Ferme le dropdown
+   */
+  closeDropdown(): void {
+    this.showProductDropdown = false;
+  }
+
   addProduct() {
     if (this.productForm.valid) {
       console.log('Valeurs du formulaire:', this.productForm.value);
 
+      // Convertir les valeurs du formulaire en types corrects
+      const nomProduitValue = this.productForm.value.nom_produit;
+      const nomProduitEnum = this.convertCodeToNomProduit(nomProduitValue);
+      
       const newProduct: Eset = {
         esetid: null!,
         client: this.productForm.value.client,
@@ -139,7 +312,7 @@ export class ProductsComponent implements OnInit {
         sousContrat: this.productForm.value.sousContrat || false,
         remarque: this.productForm.value.remarque || '',
         cle_de_Licence: this.productForm.value.cle_de_Licence,
-        nom_produit: this.productForm.value.nom_produit,
+        nom_produit: nomProduitEnum,  // Valeur d'enum, pas le code
         nombre: this.productForm.value.nombre || 0,
         nmb_tlf: this.productForm.value.nmb_tlf || 0,
         nom_contact: this.productForm.value.nom_contact || '',
@@ -216,6 +389,105 @@ export class ProductsComponent implements OnInit {
       // Sinon naviguer (mode standalone)
       this.router.navigate(['/affichage']);
     }
+  }
+
+  /**
+   * Ouvre le modal pour ajouter rapidement un produit
+   */
+  openAddProduitModal(): void {
+    this.showQuickAddProduit = true;
+    this.quickProduitName = '';
+    this.quickProduitError = '';
+  }
+
+  /**
+   * Ferme le modal d'ajout de produit
+   */
+  closeAddProduitModal(): void {
+    this.showQuickAddProduit = false;
+    this.quickProduitName = '';
+    this.quickProduitError = '';
+  }
+
+  /**
+   * Ajoute un produit rapidement (juste le nom, le code est auto-généré)
+   */
+  quickAddProduit(): void {
+    this.quickProduitError = '';
+    
+    if (!this.quickProduitName || this.quickProduitName.trim().length < 3) {
+      this.quickProduitError = 'Le nom du produit doit contenir au moins 3 caractères';
+      return;
+    }
+
+    // Auto-générer le code : slugify du nom
+    const produitName = this.quickProduitName.trim();
+    const autoCode = produitName
+      .toLowerCase()
+      .replace(/[éèê]/g, 'e')
+      .replace(/[àâ]/g, 'a')
+      .replace(/[ù]/g, 'u')
+      .replace(/[^a-z0-9]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '');
+
+    const newProduit: Produit = {
+      code: autoCode,
+      label: produitName,
+      description: '',
+      actif: true
+    };
+
+    this.produitService.addProduit(newProduit).subscribe(
+      (response) => {
+        console.log('Produit ajouté avec succès', response);
+        this.closeAddProduitModal();
+        // Le produit s'ajoute automatiquement à la liste via le service (BehaviorSubject)
+      },
+      (error) => {
+        console.error('Erreur lors de l\'ajout du produit', error);
+        this.quickProduitError = error.error?.message || 'Erreur lors de l\'ajout du produit';
+      }
+    );
+  }
+
+  /**
+   * Supprime le produit actuellement sélectionné
+   */
+  deleteSelectedProduct(): void {
+    const selectedCode = this.productForm.get('nom_produit')?.value;
+    
+    if (!selectedCode) {
+      alert('Veuillez sélectionner un produit à supprimer');
+      return;
+    }
+
+    // Trouver le produit sélectionné
+    const produitToDelete = this.produitsFromApi.find(p => p.code === selectedCode);
+    if (!produitToDelete || !produitToDelete.id) {
+      alert('Produit non trouvé');
+      return;
+    }
+
+    // Confirmation
+    const confirmed = confirm(`Êtes-vous sûr de vouloir supprimer le produit "${produitToDelete.label}" ?`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.produitService.desactiverProduit(produitToDelete.id).subscribe(
+      (response) => {
+        console.log('Produit supprimé avec succès', response);
+        // Réinitialiser la sélection
+        this.productForm.patchValue({ nom_produit: '' });
+        // Reload la liste des produits
+        this.produitService.rechargerProduits();
+      },
+      (error) => {
+        console.error('Erreur lors de la suppression du produit', error);
+        alert('Erreur lors de la suppression du produit');
+      }
+    );
   }
 
   // ==================== GESTION DES FICHIERS ====================

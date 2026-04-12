@@ -168,21 +168,33 @@
       <!-- CC Mail - CORRIGÉ -->
       <div class="form-group mb-3">
         <label class="form-label">Emails en copie (CC)</label>
-        <div formArrayName="ccMail">
-          <div *ngFor="let control of ccMail.controls; let i = index" class="cc-email-row">
-            <input
-              [formControlName]="i"
-              type="email"
-              class="form-control me-2"
-              placeholder="Email en copie"
-            />
-            <button type="button" class="cc-btn-icon cc-btn-remove" (click)="removeCcMail(i)" title="Supprimer" *ngIf="ccMail.length > 1">
-              <i class="fas fa-minus"></i>
+        <div *ngIf="updateForm.get('ccMail') as cc">
+          <div [formArrayName]="'ccMail'">
+            <div *ngFor="let control of cc.controls; let i = index" class="cc-email-row">
+              <input
+                [formControlName]="i"
+                type="email"
+                class="form-control"
+                placeholder="Email en copie"
+              />
+              <button 
+                type="button" 
+                class="md-btn-icon md-btn-remove" 
+                (click)="removeCcMail(i)" 
+                title="Supprimer"
+              >
+                <i class="fas fa-minus"></i>
+              </button>
+            </div>
+            <button 
+              type="button" 
+              class="md-btn-icon md-btn-add" 
+              (click)="addCcMail()" 
+              title="Ajouter un email"
+            >
+              <i class="fas fa-plus"></i>
             </button>
           </div>
-          <button type="button" class="cc-btn-icon cc-btn-add" (click)="addCcMail()" title="Ajouter un email">
-            <i class="fas fa-plus"></i>
-          </button>
         </div>
       </div>
 

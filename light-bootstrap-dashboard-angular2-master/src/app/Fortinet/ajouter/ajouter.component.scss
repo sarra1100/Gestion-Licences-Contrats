@@ -1,150 +1,284 @@
-// styles.scss commun pour Fortinet et Veeam update avec scroll
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  margin-top: 30px;
-  margin-bottom: 30px;
-}
-
-h2.text-center {
-  text-align: center;
-  color: #1a204c; // Bleu foncé
-  font-size: 2.2rem;
-  margin-bottom: 30px;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  position: relative;
-  padding-bottom: 15px;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 4px;
-    background: linear-gradient(90deg, #f36e24, #ff8c42);
-    border-radius: 2px;
-  }
-}
+/* Fortinet Add Component Styles - ESET Design */
 
 .form-wrapper {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-  max-height: 70vh; // Hauteur maximale pour le défilement
-  overflow-y: auto; // Activation du défilement vertical
-  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
-// Container pour les boutons (fixé en bas)
-.form-buttons {
-  position: sticky;
-  bottom: 0;
-  background: white;
-  padding: 20px 0;
-  margin-top: 20px;
-  border-top: 2px solid #f8f9fa;
-  z-index: 10;
-  
-  .btn {
-    margin-right: 10px;
-    
-    &:last-child {
-      margin-right: 0;
-    }
-  }
+.form-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #667eea;
 }
 
 .form-group {
-  margin-bottom: 25px;
-  position: relative;
-  
-  label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #1a204c;
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    
-    &::after {
-      content: ':';
-    }
-  }
+  margin-bottom: 1.5rem;
 }
 
 .form-control {
   width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #e1e5eb;
+  padding: 0.85rem 1rem;
+  border: 2px solid #e0e0e0;
   border-radius: 8px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  background: #f8f9fa;
-  
-  &:focus {
-    border-color: #f36e24;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(243, 110, 36, 0.1);
-    outline: none;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: #667eea;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+/* Form Row Layout - 2 columns */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
   }
-  
+}
+
+/* Licence Row Layout */
+.licence-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr auto;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #667eea;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+
+  input, button {
+    margin: 0;
+  }
+}
+
+/* CC Email Row */
+.cc-email-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+
+  input {
+    flex: 1;
+  }
+}
+
+/* Icon Buttons */
+.md-btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  padding: 0;
+
+  &:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
   &:disabled {
-    background: #e9ecef;
-    color: #6c757d;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 }
 
-textarea.form-control {
-  min-height: 100px;
-  resize: vertical;
-}
+.md-btn-add {
+  background: #28a745;
+  color: #fff;
 
-// Styles pour les FormArrays (Licences et CC Mails)
-div[formArrayName] {
-  margin-bottom: 25px;
-  
-  > label {
-    display: block;
-    margin-bottom: 15px;
-    font-weight: 600;
-    color: #1a204c;
-    font-size: 1rem;
+  &:hover:not(:disabled) {
+    background: #218838;
   }
 }
 
-// Styles pour les items de licence
-.row.align-items-end {
-  margin-bottom: 15px;
-  padding: 15px;
-  background: #f8f9fa;
+.md-btn-remove {
+  background: #dc3545;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #c82333;
+  }
+}
+
+/* Buttons */
+.btn {
+  padding: 0.75rem 1.2rem;
+  border: none;
+  cursor: pointer;
   border-radius: 8px;
-  border-left: 4px solid #f36e24;
-  
-  .col-md-4, .col-md-3 {
-    margin-bottom: 10px;
-    
-    label {
-      font-size: 0.85rem;
-      color: #6c757d;
-      margin-bottom: 5px;
-      text-transform: none;
-      font-weight: 500;
-      
-      &::after {
-        content: '';
-      }
+  font-weight: 600;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.btn-primary {
+  background: #667eea;
+  color: white;
+
+  &:hover {
+    background: #5568d3;
+  }
+
+  &:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+}
+
+.btn-secondary {
+  background: #f0f3f7;
+  color: #333;
+  border: 1px solid #e0e0e0;
+
+  &:hover {
+    background: #e8ecf1;
+  }
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+
+  &:hover {
+    background: #c82333;
+  }
+}
+
+/* Form Buttons Container */
+.form-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+
+  button {
+    flex: 1;
+  }
+}
+
+/* File Input */
+.file-input-wrapper {
+  position: relative;
+  overflow: hidden;
+
+  input[type="file"] {
+    position: absolute;
+    left: -9999px;
+  }
+
+  .file-input-label {
+    display: block;
+    padding: 0.85rem 1rem;
+    background-color: #f8f9fa;
+    border: 2px dashed #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+
+    &:hover {
+      background-color: #f0f3f7;
+      border-color: #667eea;
     }
+
+    span {
+      display: block;
+      color: #666;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+/* Alerts */
+.alert {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.alert-success {
+  background: rgba(81, 207, 102, 0.1);
+  color: #37b24d;
+  border: 1px solid #51cf66;
+}
+
+.alert-danger {
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff6b6b;
+  border: 1px solid #ff8787;
+}
+
+.alert-info {
+  background: rgba(13, 110, 253, 0.1);
+  color: #0d6efd;
+  border: 1px solid #0d6efd;
+}
+
+/* Validation */
+.text-danger {
+  color: #ff6b6b;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+/* Checkbox */
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  .form-check-input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .form-check-label {
+    margin: 0;
+    cursor: pointer;
+    font-weight: 500;
   }
 }
 

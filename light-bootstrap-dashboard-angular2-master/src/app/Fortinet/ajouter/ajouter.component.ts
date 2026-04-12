@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Fortinet } from 'app/Model/Fortinet';
@@ -13,6 +13,9 @@ import { ClientService, Client } from '../../Services/client.service';
   styleUrls: ['./ajouter.component.scss']
 })
 export class AjouterComponent implements OnInit {
+  @Output() fortinetAdded = new EventEmitter<void>();
+  @Output() cancelled = new EventEmitter<void>();
+
   clients: Client[] = [];
   fortinetForm!: FormGroup;
   
@@ -168,7 +171,7 @@ addFortinet() {
           this.uploadFileAfterCreation(response.fortinetId);
         } else {
           window.alert('Fortinet ajouté avec succès');
-          this.router.navigate(['/Afficherfortinet']);
+          this.fortinetAdded.emit();
         }
       },
       error => {
@@ -184,9 +187,23 @@ addFortinet() {
     window.alert('Le formulaire est invalide. Veuillez corriger les erreurs.');
   }
 }
+
 onCancel(): void {
-    this.router.navigate(['/Afficherfortinet']);
+  this.cancelled.emit();
+}
+
+resetForm(): void {
+  this.fortinetForm.reset();
+  this.selectedFile = null;
+  this.uploadMessage = null;
+  // Réinitialiser les arrays
+  while (this.licences.length > 1) {
+    this.licences.removeAt(1);
   }
+  while (this.ccMail.length > 0) {
+    this.ccMail.removeAt(0);
+  }
+}
 
   // ==================== GESTION DES FICHIERS ====================
   
@@ -201,7 +218,7 @@ onCancel(): void {
   uploadFileAfterCreation(fortinetId: number): void {
     if (!this.selectedFile) {
       window.alert('Fortinet ajouté avec succès');
-      this.router.navigate(['/Afficherfortinet']);
+      this.fortinetAdded.emit();
       return;
     }
 
@@ -212,12 +229,12 @@ onCancel(): void {
             this.uploadSuccess = true;
             this.uploadMessage = 'Fichier uploadé avec succès!';
             window.alert('Fortinet et fichier ajoutés avec succès');
-            this.router.navigate(['/Afficherfortinet']);
+            this.fortinetAdded.emit();
           } else {
             this.uploadSuccess = false;
             this.uploadMessage = event.body.message || 'Erreur lors de l\'upload';
             window.alert('Fortinet ajouté mais erreur lors de l\'upload du fichier');
-            this.router.navigate(['/Afficherfortinet']);
+            this.fortinetAdded.emit();
           }
         }
       },
@@ -226,7 +243,7 @@ onCancel(): void {
         this.uploadMessage = 'Erreur lors de l\'upload: ' + (error.error?.message || error.message);
         console.error('Erreur upload:', error);
         window.alert('Fortinet ajouté mais erreur lors de l\'upload du fichier: ' + this.uploadMessage);
-        this.router.navigate(['/Afficherfortinet']);
+        this.fortinetAdded.emit();
       }
     });
   }

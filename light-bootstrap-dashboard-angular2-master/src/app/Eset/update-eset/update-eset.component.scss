@@ -10,7 +10,7 @@
 
 h2.text-center {
   text-align: center;
-  color: #1a204c; // Bleu foncé
+  color: #1a204c;
   font-size: 2.2rem;
   margin-bottom: 30px;
   font-weight: bold;
@@ -412,14 +412,53 @@ div[formArrayName] {
     align-items: center;
     justify-content: center;
   }
-  
-  &:hover:not(:disabled) {
-    transform: scale(1.1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Icon Button Styles - Professional Design */
+.md-btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  padding: 0;
+
+  &:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
-  
-  &:active:not(:disabled) {
-    transform: scale(0.95);
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.md-btn-add {
+  background: #28a745;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #218838;
+  }
+}
+
+.md-btn-remove {
+  background: #dc3545;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #c82333;
   }
 }
 

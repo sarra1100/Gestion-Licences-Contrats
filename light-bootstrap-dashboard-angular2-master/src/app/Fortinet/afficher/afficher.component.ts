@@ -20,6 +20,10 @@ export class AfficherComponent implements OnInit {
   totalPages: number = 0;
   pagedFortinets: Fortinet[] = [];
 
+  showAddModal: boolean = false;
+  showUpdateModal: boolean = false;
+  selectedFortinetToUpdate: Fortinet | null = null;
+
   constructor(private fortinetService: FortinetService, private router: Router) {}
 
   ngOnInit(): void {
@@ -108,10 +112,6 @@ export class AfficherComponent implements OnInit {
     }
   }
 
-  updateFortinet(fortinet: Fortinet): void {
-    this.router.navigate(['/edit-fortinet', fortinet.fortinetId]);
-  }
-
   selectFortinet(f: Fortinet): void {
     this.selectedFortinet = this.selectedFortinet?.fortinetId === f.fortinetId ? null : f;
   }
@@ -121,7 +121,40 @@ export class AfficherComponent implements OnInit {
   }
 
   goToAddFortinet() {
-    this.router.navigate(['/AjouterFortinet']);
+    this.showAddModal = true;
+  }
+
+  closeAddModal() {
+    this.showAddModal = false;
+  }
+
+  onFortinetAdded() {
+    this.showAddModal = false;
+    this.getAllFortinets();
+  }
+
+  onAddCancelled() {
+    this.showAddModal = false;
+  }
+
+  updateFortinet(fortinet: Fortinet) {
+    this.selectedFortinetToUpdate = fortinet;
+    this.showUpdateModal = true;
+  }
+
+  closeUpdateModal() {
+    this.showUpdateModal = false;
+    this.selectedFortinetToUpdate = null;
+  }
+
+  onFortinetUpdated() {
+    this.showUpdateModal = false;
+    this.getAllFortinets();
+  }
+
+  onUpdateCancelled() {
+    this.showUpdateModal = false;
+    this.selectedFortinetToUpdate = null;
   }
 
   get pageNumbers(): number[] {

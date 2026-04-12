@@ -63,9 +63,33 @@ private EsetFrServiceImpl esetFrService ;
 //    }
 
     @PostMapping("/addESET")
-public ESET addEset(@RequestBody ESET eset){
-    System.out.println("Received ESET: " + eset);  // Log the incoming request body
-    return esetService.addESET(eset);
+public ResponseEntity<?> addEset(@RequestBody ESET eset){
+    try {
+        System.out.println("Received ESET: " + eset);
+        System.out.println("nom_produit: " + eset.getNom_produit());
+        System.out.println("commandePasserPar: " + eset.getCommandePasserPar());
+        System.out.println("typeAchat: " + eset.getTypeAchat());
+        
+        if (eset.getClient() == null || eset.getClient().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Le client est requis");
+        }
+        if (eset.getNom_produit() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Le produit est requis");
+        }
+        if (eset.getCommandePasserPar() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("La commande 'Passer Par' est requise");
+        }
+        if (eset.getTypeAchat() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Le type d'achat est requis");
+        }
+        
+        ESET result = esetService.addESET(eset);
+        return ResponseEntity.ok(result);
+    } catch (Exception e) {
+        System.err.println("Erreur lors de l'ajout de l'ESET: " + e.getMessage());
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur: " + e.getMessage());
+    }
 }
 
 

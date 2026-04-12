@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, OnInit, ChangeDetectorRef, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FortinetService } from 'app/Services/fortinet.service';
@@ -8,11 +8,15 @@ import { HttpEventType } from '@angular/common/http';
 import { ClientService, Client } from '../Services/client.service';
 
 @Component({
-  selector: 'app-update-fortinet',
+  selector: 'app-fortinet-update',
   templateUrl: './fortinet-update.component.html',
   styleUrls: ['./fortinet-update.component.scss']
 })
-export class UpdateFortinetComponent implements OnInit {
+export class UpdateFortinetComponent implements OnInit, OnChanges {
+  @Input() fortinetToEdit: Fortinet | null = null;
+  @Output() updated = new EventEmitter<Fortinet>();
+  @Output() cancelled = new EventEmitter<void>();
+
   clients: Client[] = [];
   updateForm!: FormGroup;
   fortinetId!: number;
@@ -45,11 +49,28 @@ export class UpdateFortinetComponent implements OnInit {
     this.clientService.getAllClients().subscribe(data => this.clients = data);
     this.initializeForm();
     
-    // Récupérer l'ID depuis l'URL
-    this.fortinetId = Number(this.route.snapshot.paramMap.get('id'));
-    
-    if (this.fortinetId) {
-      this.loadFortinet(this.fortinetId);
+    // Mode modal: utiliser @Input fortinetToEdit
+    if (this.fortinetToEdit) {
+      this.fortinet = this.fortinetToEdit;
+      this.fortinetId = this.fortinetToEdit.fortinetId!;
+      this.loadFortinetIntoForm(this.fortinet);
+    } else {
+      // Mode route normal: récupérer l'ID depuis l'URL
+      this.fortinetId = Number(this.route.snapshot.paramMap.get('id'));
+      
+      if (this.fortinetId) {
+        this.loadFortinet(this.fortinetId);
+      }
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['fortinetToEdit'] && changes['fortinetToEdit'].currentValue) {
+      this.fortinetToEdit = changes['fortinetToEdit'].currentValue;
+      if (this.updateForm) {
+        this.loadFortinetIntoForm(this.fortinetToEdit);
+        this.cdr.detectChanges();
+      }
     }
   }
 
@@ -132,60 +153,60 @@ export class UpdateFortinetComponent implements OnInit {
     }
   }
 
+  loadFortinetIntoForm(fortinet: Fortinet): void {
+    console.log('Fortinet chargé:', fortinet);
+    console.log('Licences reçues:', fortinet.licences);
+    
+    // Convertir la valeur en enum
+    const commandePasserParValue = this.getCommandePasserParValue(fortinet.commandePasserPar);
+    
+    this.updateForm.patchValue({
+      client: fortinet.client,
+      nomDuBoitier: fortinet.nomDuBoitier,
+      numeroSerie: fortinet.numeroSerie,
+      commandePasserPar: commandePasserParValue,
+      dureeDeLicence: fortinet.dureeDeLicence,
+      nomDuContact: fortinet.nomDuContact,
+      sousContrat: fortinet.sousContrat,
+      adresseEmailContact: fortinet.adresseEmailContact,
+      mailAdmin: fortinet.mailAdmin,
+      numero: fortinet.numero,
+      remarque: fortinet.remarque
+    });
+
+    // Charger les licences
+    if (fortinet.licences && fortinet.licences.length > 0) {
+      const licencesArray = this.updateForm.get('licences') as FormArray;
+      licencesArray.clear();
+      
+      fortinet.licences.forEach((licence: any) => {
+        licencesArray.push(this.fb.group({
+          nomDesLicences: [licence.nomDesLicences, Validators.required],
+          quantite: [licence.quantite, [Validators.required, Validators.min(1)]],
+          dateEx: [licence.dateEx]
+        }));
+      });
+    }
+
+    // Charger les CC mails
+    if (fortinet.ccMail && fortinet.ccMail.length > 0) {
+      const ccMailArray = this.updateForm.get('ccMail') as FormArray;
+      ccMailArray.clear();
+      
+      fortinet.ccMail.forEach((email: string) => {
+        ccMailArray.push(this.fb.control(email.trim(), [Validators.email]));
+      });
+    }
+
+    this.currentFileName = fortinet.fichier || null;
+    this.currentFileOriginalName = fortinet.fichierOriginalName || null;
+  }
+
   loadFortinet(id: number): void {
     this.fortinetService.getFortinetById(id).subscribe(
       (fortinet: Fortinet) => {
-        console.log('Fortinet chargé:', fortinet);
-        console.log('Licences reçues:', fortinet.licences);
-        console.log('Type de licences:', typeof fortinet.licences);
-        console.log('Valeur commandePasserPar from API:', fortinet.commandePasserPar);
-        console.log('Type de commandePasserPar:', typeof fortinet.commandePasserPar);
-        
-        // Convertir la valeur en enum
-        const commandePasserParValue = this.getCommandePasserParValue(fortinet.commandePasserPar);
-        console.log('Valeur convertie commandePasserPar:', commandePasserParValue);
-        
-        this.updateForm.patchValue({
-          client: fortinet.client,
-          nomDuBoitier: fortinet.nomDuBoitier,
-          numeroSerie: fortinet.numeroSerie,
-          commandePasserPar: commandePasserParValue,
-          dureeDeLicence: fortinet.dureeDeLicence,
-          nomDuContact: fortinet.nomDuContact,
-          sousContrat: fortinet.sousContrat,
-          adresseEmailContact: fortinet.adresseEmailContact,
-          mailAdmin: fortinet.mailAdmin,
-          numero: fortinet.numero,
-          remarque: fortinet.remarque
-        });
-
-        // Vérifier la valeur après le patch
-        setTimeout(() => {
-          console.log('Valeur dans formulaire après patch:', this.updateForm.get('commandePasserPar')?.value);
-        }, 100);
-
-        // Charger les licences
-        this.licences.clear();
-        if (fortinet.licences && fortinet.licences.length > 0) {
-          fortinet.licences.forEach(lic => {
-            this.licences.push(this.fb.group({
-              nomDesLicences: [lic.nomDesLicences],
-              quantite: [lic.quantite],
-              dateEx: [this.formatDate(lic.dateEx)]
-            }));
-          });
-        } else {
-          this.addLicence();
-        }
-
-        // Charger les CC mails
-        this.setCcMail(fortinet.ccMail || []);
-        
-        // Charger le nom du fichier existant
-        if (fortinet.fichier) {
-          this.currentFileName = fortinet.fichier;
-          this.currentFileOriginalName = fortinet.fichierOriginalName || fortinet.fichier;
-        }
+        this.fortinet = fortinet;
+        this.loadFortinetIntoForm(fortinet);
       },
       error => {
         console.error('Erreur lors du chargement du Fortinet:', error);
@@ -241,7 +262,13 @@ export class UpdateFortinetComponent implements OnInit {
         response => {
           console.log('Réponse mise à jour:', response);
           window.alert('Fortinet mis à jour avec succès');
-          this.router.navigate(['/Afficherfortinet']);
+          // Mode modal: émettre l'événement updated
+          if (this.fortinetToEdit) {
+            this.updated.emit(updatedFortinet);
+          } else {
+            // Mode route: naviguer
+            this.router.navigate(['/Afficherfortinet']);
+          }
         },
         error => {
           console.error('Erreur lors de la mise à jour:', error);
@@ -276,7 +303,13 @@ export class UpdateFortinetComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['/Afficherfortinet']);
+    // Mode modal: émettre l'événement cancelled
+    if (this.fortinetToEdit) {
+      this.cancelled.emit();
+    } else {
+      // Mode route: naviguer
+      this.router.navigate(['/Afficherfortinet']);
+    }
   }
 
   // ==================== GESTION DES FICHIERS ====================
