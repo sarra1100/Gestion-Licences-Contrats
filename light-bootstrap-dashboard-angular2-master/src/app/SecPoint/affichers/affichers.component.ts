@@ -40,7 +40,7 @@ export class AffichersComponent implements OnInit {
           this.changePage(0);
         },
         (error) => {
-          console.error('Erreur rÃ©cupÃ©ration SecPoints', error);
+          console.error('Erreur récupération SecPoints', error);
         }
       );
     }
@@ -82,7 +82,7 @@ export class AffichersComponent implements OnInit {
       this.filteredSecPoints = this.filteredSecPoints.filter(secPoint => secPoint.secPointId !== id);
       this.calculatePagination();
       this.changePage(this.currentPage);
-      console.log('Article approuvÃ© et retirÃ© de la liste');
+      console.log('Article approuvé et retiré de la liste');
     });
   }
   
@@ -91,11 +91,11 @@ export class AffichersComponent implements OnInit {
         this.secPointService.deleteSecPoint(id).subscribe(
           () => {
             this.getAllSecPoints();
-            alert('SecPoint supprimÃ© avec succÃ¨s');
+            alert('SecPoint supprimé avec succès');
           },
           error => {
             console.error('Erreur suppression SecPoint', error);
-            alert('Ã‰chec suppression');
+            alert('Échec suppression');
           }
         );
       }

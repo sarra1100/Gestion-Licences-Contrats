@@ -41,7 +41,7 @@ export class AfficheroComponent implements OnInit {
           this.changePage(0);
         },
         (error) => {
-          console.error('Erreur rÃ©cupÃ©ration OneIdentitys', error);
+          console.error('Erreur récupération OneIdentitys', error);
         }
       );
     }
@@ -83,7 +83,7 @@ export class AfficheroComponent implements OnInit {
       this.filteredOneIdentitys = this.filteredOneIdentitys.filter(oneIdentity => oneIdentity.oneIdentityId !== id);
       this.calculatePagination();
       this.changePage(this.currentPage);
-      console.log('Article approuvÃ© et retirÃ© de la liste');
+      console.log('Article approuvé et retiré de la liste');
     });
   }
   
@@ -92,11 +92,11 @@ export class AfficheroComponent implements OnInit {
         this.oneIdentityService.deleteOneIdentity(id).subscribe(
           () => {
             this.getAllOneIdentitys();
-            alert('OneIdentity supprimÃ© avec succÃ¨s');
+            alert('OneIdentity supprimé avec succès');
           },
           error => {
             console.error('Erreur suppression OneIdentity', error);
-            alert('Ã‰chec suppression');
+            alert('Échec suppression');
           }
         );
       }

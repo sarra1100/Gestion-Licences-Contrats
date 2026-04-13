@@ -41,7 +41,7 @@ export class AffichervrComponent implements OnInit {
           this.changePage(0);
         },
         (error) => {
-          console.error('Erreur rÃ©cupÃ©ration Varoniss', error);
+          console.error('Erreur récupération Varoniss', error);
         }
       );
     }
@@ -83,7 +83,7 @@ export class AffichervrComponent implements OnInit {
       this.filteredVaroniss = this.filteredVaroniss.filter(varonis=> varonis.varonisId !== id);
       this.calculatePagination();
       this.changePage(this.currentPage);
-      console.log('Article approuvÃ© et retirÃ© de la liste');
+      console.log('Article approuvé et retiré de la liste');
     });
   }
   
@@ -92,11 +92,11 @@ export class AffichervrComponent implements OnInit {
         this.varonisService.deleteVaronis(id).subscribe(
           () => {
             this.getAllVaronis();
-            alert('Varonis supprimÃ© avec succÃ¨s');
+            alert('Varonis supprimé avec succès');
           },
           error => {
             console.error('Erreur suppression Varonis', error);
-            alert('Ã‰chec suppression');
+            alert('Échec suppression');
           }
         );
       }

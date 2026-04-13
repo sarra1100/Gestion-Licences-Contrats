@@ -45,7 +45,7 @@ export class AfficherfortraComponent implements OnInit {
           this.changePage(0);
         },
         (error) => {
-          console.error('Erreur rÃ©cupÃ©ration Fortras', error);
+          console.error('Erreur récupération Fortras', error);
         }
       );
     }
@@ -87,7 +87,7 @@ export class AfficherfortraComponent implements OnInit {
       this.filteredFortras = this.filteredFortras.filter(fortra => fortra.fortraId !== id);
       this.calculatePagination();
       this.changePage(this.currentPage);
-      console.log('Article approuvÃ© et retirÃ© de la liste');
+      console.log('Article approuvé et retiré de la liste');
     });
   }
   
@@ -96,11 +96,11 @@ export class AfficherfortraComponent implements OnInit {
         this.fortraService.deleteFortra(id).subscribe(
           () => {
             this.getAllFortras();
-            alert('Fortra supprimÃ© avec succÃ¨s');
+            alert('Fortra supprimé avec succès');
           },
           error => {
             console.error('Erreur suppression fortra', error);
-            alert('Ã‰chec suppression');
+            alert('Échec suppression');
           }
         );
       }

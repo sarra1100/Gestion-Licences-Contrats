@@ -196,6 +196,13 @@ export class UpdatePaloComponent implements OnInit {
       this.router.navigate(['/Afficherpalo']);
     }
 
+    resetForm(): void {
+      this.updateForm.reset();
+      this.selectedFile = null;
+      this.uploadMessage = null;
+      this.uploadSuccess = false;
+    }
+
     // ==================== GESTION DES FICHIERS ====================
   
     onFileSelected(event: any): void {

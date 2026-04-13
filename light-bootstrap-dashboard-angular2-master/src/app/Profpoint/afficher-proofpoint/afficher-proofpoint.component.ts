@@ -41,7 +41,7 @@ export class AfficherProofpointComponent implements OnInit {
          this.changePage(0);
        },
        (error) => {
-         console.error('Erreur rÃ©cupÃ©ration Proofpoints', error);
+         console.error('Erreur récupération Proofpoints', error);
        }
      );
    }
@@ -83,7 +83,7 @@ export class AfficherProofpointComponent implements OnInit {
       this.filteredProofpoints = this.filteredProofpoints.filter(proofpoint => proofpoint.proofpointId !== id);
       this.calculatePagination();
       this.changePage(this.currentPage);
-      console.log('Article approuvÃ© et retirÃ© de la liste');
+      console.log('Article approuvé et retiré de la liste');
     });
   }
  
@@ -92,11 +92,11 @@ export class AfficherProofpointComponent implements OnInit {
        this.proofpointService.deleteProofpoint(id).subscribe(
          () => {
            this.getAllProofpoints();
-           alert('proofpoint supprimÃ© avec succÃ¨s');
+           alert('proofpoint supprimé avec succès');
          },
          error => {
            console.error('Erreur suppression proofpoint', error);
-           alert('Ã‰chec suppression');
+           alert('Échec suppression');
          }
        );
      }

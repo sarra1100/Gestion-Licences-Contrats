@@ -41,7 +41,7 @@ export class AffichermComponent implements OnInit {
            this.changePage(0);
          },
          (error) => {
-           console.error('Erreur rÃ©cupÃ©ration MicrosoftO365s', error);
+           console.error('Erreur récupération MicrosoftO365s', error);
          }
        );
      }
@@ -83,7 +83,7 @@ export class AffichermComponent implements OnInit {
       this.filteredMicrosofts = this.filteredMicrosofts.filter(microsoft => microsoft.microsoftO365Id !== id);
       this.calculatePagination();
       this.changePage(this.currentPage);
-      console.log('Article approuvÃ© et retirÃ© de la liste');
+      console.log('Article approuvé et retiré de la liste');
     });
   }
    
@@ -92,11 +92,11 @@ export class AffichermComponent implements OnInit {
          this.microsoftO365Service.deleteMicrosoftO365(id).subscribe(
            () => {
              this.getAllMicrosoftO365s();
-             alert('MicrosoftO365 supprimÃ© avec succÃ¨s');
+             alert('MicrosoftO365 supprimé avec succès');
            },
            error => {
              console.error('Erreur suppression MicrosoftO365', error);
-             alert('Ã‰chec suppression');
+             alert('Échec suppression');
            }
          );
        }

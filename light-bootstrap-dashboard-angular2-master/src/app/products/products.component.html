@@ -10,7 +10,9 @@
       <label for="client" class="form-label">
         Client
       </label>
-      <app-searchable-client-select formControlName="client" [clients]="clients"></app-searchable-client-select>
+      <div style="position: relative; z-index: 10000;">
+        <app-searchable-client-select #clientSelect formControlName="client" [clients]="clients"></app-searchable-client-select>
+      </div>
       <div *ngIf="productForm.get('client')?.touched && productForm.get('client')?.invalid" class="text-danger">
         Ce champ est obligatoire.
       </div>
@@ -52,34 +54,42 @@
 
     <!-- Row: Produit + Quantité -->
     <div class="form-row">
-      <!-- Nom du Produit avec dropdown personnalisé et poubelle pour chaque produit -->
+      <!-- Nom du Produit avec barre de recherche -->
       <div class="form-group">
         <label for="nom_produit" class="form-label">
           Nom du Produit
         </label>
         <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
-          <div class="product-dropdown-wrapper" style="position: relative; z-index: 100;">
-            <button
-              type="button"
-              class="form-control text-start product-dropdown-button"
-              [class.open]="showProductDropdown"
-              (click)="showProductDropdown = !showProductDropdown"
-            >
-              {{ productForm.get('nom_produit')?.value || '-- Sélectionner un produit --' }}
-              <i class="fas fa-chevron-down"></i>
-            </button>
-            <!-- Dropdown personnalisé -->
+          <div class="product-dropdown-wrapper" style="position: relative; z-index: 100; flex: 1;">
+            <!-- Barre de recherche -->
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Rechercher ou sélectionner un produit..."
+              [value]="searchProduct"
+              (input)="filterProducts($event.target.value)"
+              (focus)="onProductSearchFocus()"
+              (blur)="showProductDropdown = false"
+              id="nom_produit"
+              style="padding: 0.85rem 1rem;"
+              autocomplete="off"
+            />
+            
+            <!-- Dropdown avec produits filtrés -->
             <div 
-              *ngIf="showProductDropdown"
+              *ngIf="showProductDropdown && filteredProducts.length > 0"
               class="product-dropdown-content"
-              style="z-index: 101;"
+              style="z-index: 101; width: 100%;"
               (click)="$event.stopPropagation()"
+              (mousedown)="$event.preventDefault()"
             >
               <div
-                *ngFor="let product of nomProduitOptions"
+                *ngFor="let product of filteredProducts"
+                class="product-option"
               >
                 <span
                   (click)="selectProduct(product.value); showProductDropdown = false"
+                  style="flex: 1; padding: 0.75rem 1rem; cursor: pointer; display: block;"
                 >
                   {{ product.display }}
                 </span>
@@ -90,12 +100,23 @@
                   (click)="deleteProduct(product.value); $event.stopPropagation()"
                   *ngIf="isAdmin()"
                   title="Supprimer ce produit"
+                  (mousedown)="$event.preventDefault()"
                 >
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
             </div>
+
+            <!-- Message si aucun produit ne correspond à la recherche -->
+            <div 
+              *ngIf="showProductDropdown && filteredProducts.length === 0"
+              class="product-dropdown-content"
+              style="z-index: 101; padding: 1rem; text-align: center; color: #888;"
+            >
+              Aucun produit ne correspond à "{{ searchProduct }}"
+            </div>
           </div>
+          
           <!-- Bouton + pour ajouter (Admin seulement) -->
           <button 
             type="button" 
@@ -107,6 +128,15 @@
           >
             <i class="fas fa-plus"></i>
           </button>
+        </div>
+        <!-- Valeur sélectionnée affichée -->
+        <div *ngIf="productForm.get('nom_produit')?.value">
+          <small style="color: #667eea; font-weight: 600; margin-top: 0.5rem; display: block;">
+            ✓ Produit sélectionné: {{ getSelectedProductDisplay() }}
+          </small>
+        </div>
+        <div *ngIf="productForm.get('nom_produit')?.touched && productForm.get('nom_produit')?.invalid" class="text-danger">
+          Ce champ est obligatoire.
         </div>
       </div>
 
@@ -120,9 +150,13 @@
           id="nombre"
           class="form-control"
           formControlName="nombre"
-          placeholder="0"
+          placeholder="Entrez la quantité"
           min="1"
         />
+        <div *ngIf="productForm.get('nombre')?.touched && productForm.get('nombre')?.invalid" class="text-danger">
+          <div *ngIf="productForm.get('nombre')?.errors?.['required']">La quantité est obligatoire.</div>
+          <div *ngIf="productForm.get('nombre')?.errors?.['min']">La quantité doit être au moins 1.</div>
+        </div>
       </div>
     </div>
 
@@ -332,7 +366,9 @@
     </div>
 
     <div class="form-buttons">
-      <button type="submit" class="btn btn-primary">Ajouter Licence</button>
+      <button type="submit" class="btn btn-primary" [disabled]="!productForm.valid">
+        Ajouter Licence
+      </button>
       <button type="reset" class="btn btn-secondary">Réinitialiser</button>
     </div>
   </form>

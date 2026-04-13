@@ -40,7 +40,7 @@ export class AfficherbComponent implements OnInit {
           this.changePage(0);
         },
         (error) => {
-          console.error('Erreur rÃ©cupÃ©ration bitdefenders', error);
+          console.error('Erreur récupération bitdefenders', error);
         }
       );
     }
@@ -82,7 +82,7 @@ export class AfficherbComponent implements OnInit {
       this.filteredBitdefenders = this.filteredBitdefenders.filter(bitdefender => bitdefender.bitdefenderId !== id);
       this.calculatePagination();
       this.changePage(this.currentPage);
-      console.log('Article approuvÃ© et retirÃ© de la liste');
+      console.log('Article approuvé et retiré de la liste');
     });
   }
   
@@ -91,11 +91,11 @@ export class AfficherbComponent implements OnInit {
         this.bitdefenderService.deleteBitdefender(id).subscribe(
           () => {
             this.getAllBitdefenders();
-            alert('Bitdefender supprimÃ© avec succÃ¨s');
+            alert('Bitdefender supprimé avec succès');
           },
           error => {
             console.error('Erreur suppression Bitdefender', error);
-            alert('Ã‰chec suppression');
+            alert('Échec suppression');
           }
         );
       }

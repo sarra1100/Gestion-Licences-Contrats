@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { EsetService } from 'app/Services/eset.service';
 import { Eset } from 'app/Model/Eset';
 import { Router } from '@angular/router';
+import { ViewChild } from '@angular/core';
+import { ProductsComponent } from 'app/products/products.component';
 
 @Component({
   selector: 'app-affichage',
@@ -64,10 +66,33 @@ export class AffichageComponent implements OnInit {
     'licence_gratuit': 'Licence Gratuit',
   };
 
+  @ViewChild(ProductsComponent) productsComponent!: ProductsComponent;
+
   constructor(private esetService: EsetService, private router: Router) { }
 
   ngOnInit(): void {
     this.getAllEsets();
+  }
+
+  onModalBodyClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    
+    // Ne pas fermer les dropdowns si le clic provient d'un élément interactif
+    if (target?.closest('input, button, select, .scs-dropdown, .product-dropdown-content')) {
+      return;
+    }
+    
+    // Vérifier si c'est un clic en dehors des éléments de formulaire
+    const isFormControl = target?.closest('.form-control, .form-group input');
+    if (isFormControl) return;
+    
+    // Sinon, fermer les dropdowns quand on clique en dehors
+    if (this.productsComponent) {
+      this.productsComponent.showProductDropdown = false;
+      if (this.productsComponent.clientSelect) {
+        this.productsComponent.clientSelect.closeDropdown();
+      }
+    }
   }
 
   onSearch() {

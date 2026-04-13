@@ -37,6 +37,10 @@ export class SearchableClientSelectComponent implements ControlValueAccessor, On
     }
   }
 
+  getElement(): HTMLElement {
+    return this.el.nativeElement;
+  }
+
   /* ── Filtre ── */
   get filteredClients(): Client[] {
     if (!this.searchTerm.trim()) return this.clients;
@@ -92,13 +96,16 @@ export class SearchableClientSelectComponent implements ControlValueAccessor, On
   @HostListener('document:click', ['$event'])
   onDocumentClick(evt: Event): void {
     if (!this.el.nativeElement.contains(evt.target)) {
-      // Si rien de selectionne, restaurer l'ancien nom
-      if (!this.selectedValue) {
-        this.searchTerm = '';
-      } else {
-        this.searchTerm = this.selectedValue;
-      }
-      this.isOpen = false;
+      this.closeDropdown();
     }
+  }
+
+  closeDropdown(): void {
+    if (!this.selectedValue) {
+      this.searchTerm = '';
+    } else {
+      this.searchTerm = this.selectedValue;
+    }
+    this.isOpen = false;
   }
 }

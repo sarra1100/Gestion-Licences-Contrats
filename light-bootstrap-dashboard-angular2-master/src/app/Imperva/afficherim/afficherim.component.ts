@@ -40,7 +40,7 @@ export class AfficherimComponent implements OnInit {
           this.changePage(0);
         },
         (error) => {
-          console.error('Erreur rÃ©cupÃ©ration impervas', error);
+          console.error('Erreur récupération impervas', error);
         }
       );
     }
@@ -82,7 +82,7 @@ export class AfficherimComponent implements OnInit {
       this.filteredImpervas = this.filteredImpervas.filter(imperva=> imperva.impervaId !== id);
       this.calculatePagination();
       this.changePage(this.currentPage);
-      console.log('Article approuvÃ© et retirÃ© de la liste');
+      console.log('Article approuvé et retiré de la liste');
     });
   }
   
@@ -91,11 +91,11 @@ export class AfficherimComponent implements OnInit {
         this.impervaService.deleteImperva(id).subscribe(
           () => {
             this.getAllImpervas();
-            alert('Imperva supprimÃ© avec succÃ¨s');
+            alert('Imperva supprimé avec succès');
           },
           error => {
             console.error('Erreur suppression Imperva', error);
-            alert('Ã‰chec suppression');
+            alert('Échec suppression');
           }
         );
       }

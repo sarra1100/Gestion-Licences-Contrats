@@ -34,12 +34,12 @@ export class AfficherCrowdstrikeComponent implements OnInit {
   }
 
   getAllCrowdstrikes(): void {
-    console.log('DÃ©but de la rÃ©cupÃ©ration des CrowdStrikes');
+    console.log('Début de la récupération des CrowdStrikes');
     this.crowdstrikeService.getAllCrowdstrikes().subscribe(
       (data: Crowdstrike[]) => {
-        console.log('DonnÃ©es reÃ§ues du backend:', data);
+        console.log('Données reçues du backend:', data);
         
-        // Debug: VÃ©rifiez les IDs
+        // Debug: Vérifiez les IDs
         data.forEach((item, index) => {
           console.log(`Item ${index}: ID =`, item.crowdstrikeid, 'Type:', typeof item.crowdstrikeid);
         });
@@ -50,8 +50,8 @@ export class AfficherCrowdstrikeComponent implements OnInit {
         this.changePage(0);
       },
       (error) => {
-        console.error('Erreur rÃ©cupÃ©ration Crowdstrikes', error);
-        alert('Erreur lors de la rÃ©cupÃ©ration des donnÃ©es');
+        console.error('Erreur récupération Crowdstrikes', error);
+        alert('Erreur lors de la récupération des données');
       }
     );
   }
@@ -99,12 +99,12 @@ export class AfficherCrowdstrikeComponent implements OnInit {
 
     this.crowdstrikeService.activate(id).subscribe(
       () => {
-        console.log('Approbation rÃ©ussie pour ID:', id);
+        console.log('Approbation réussie pour ID:', id);
         this.unapprovedCrowdstrikes = this.unapprovedCrowdstrikes.filter(crowdstrike => crowdstrike.crowdstrikeid !== id);
         this.filteredCrowdstrikes = this.filteredCrowdstrikes.filter(crowdstrike => crowdstrike.crowdstrikeid !== id);
         this.calculatePagination();
         this.changePage(this.currentPage);
-        alert('CrowdStrike approuvÃ© avec succÃ¨s');
+        alert('CrowdStrike approuvé avec succès');
       },
       error => {
         console.error('Erreur lors de l\'approbation:', error);
@@ -125,9 +125,9 @@ export class AfficherCrowdstrikeComponent implements OnInit {
     if (confirm('Confirmer la suppression ?')) {
       this.crowdstrikeService.deleteCrowdstrike(id).subscribe(
         () => {
-          console.log('Suppression rÃ©ussie pour ID:', id);
+          console.log('Suppression réussie pour ID:', id);
           this.getAllCrowdstrikes();
-          alert('CrowdStrike supprimÃ© avec succÃ¨s');
+          alert('CrowdStrike supprimé avec succès');
         },
         error => {
           console.error('Erreur suppression CrowdStrike', error);
@@ -146,7 +146,7 @@ export class AfficherCrowdstrikeComponent implements OnInit {
       return;
     }
 
-    // VÃ‰RIFIEZ QUE CETTE ROUTE EXISTE DANS VOTRE app-routing.module.ts
+    // VÉRIFIEZ QUE CETTE ROUTE EXISTE DANS VOTRE app-routing.module.ts
     this.router.navigate(['/edit-crowdstrike', crowdstrike.crowdstrikeid]);
   }
 

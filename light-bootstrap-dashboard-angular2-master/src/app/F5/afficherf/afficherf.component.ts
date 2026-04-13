@@ -45,7 +45,7 @@ export class AfficherfComponent implements OnInit {
           this.changePage(0);
         },
         (error) => {
-          console.error('Erreur rÃ©cupÃ©ration F5s', error);
+          console.error('Erreur récupération F5s', error);
         }
       );
     }
@@ -87,7 +87,7 @@ export class AfficherfComponent implements OnInit {
       this.filteredF5s= this.filteredF5s.filter(f5 => f5.f5Id !== id);
       this.calculatePagination();
       this.changePage(this.currentPage);
-      console.log('Article approuvÃ© et retirÃ© de la liste');
+      console.log('Article approuvé et retiré de la liste');
     });
   }
   
@@ -96,11 +96,11 @@ export class AfficherfComponent implements OnInit {
         this.f5Service.deleteF5(id).subscribe(
           () => {
             this.getAllF5s();
-            alert('F5 supprimÃ© avec succÃ¨s');
+            alert('F5 supprimé avec succès');
           },
           error => {
             console.error('Erreur suppression F5', error);
-            alert('Ã‰chec suppression');
+            alert('Échec suppression');
           }
         );
       }

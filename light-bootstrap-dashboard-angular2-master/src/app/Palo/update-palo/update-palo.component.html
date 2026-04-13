@@ -57,18 +57,13 @@
             />
           </div>
           <div class="col-md-1">
-            <button
-              type="button"
-              class="btn btn-danger"
-              (click)="removeLicence(i)"
-              *ngIf="licences.length > 1"
-            >
-              ×
-            </button>
+        <button type="button" class="md-btn-icon md-btn-remove" (click)="removeLicence(i)" title="Supprimer cette licence" *ngIf="licences.length > 1">
+          <i class="fas fa-trash"></i>
+        </button>
           </div>
         </div>
-        <button type="button" class="btn btn-secondary mt-2" (click)="addLicence()">
-          Ajouter une licence
+        <button type="button" class="md-btn-icon md-btn-add" (click)="addLicence()" title="Ajouter une licence" style="margin-top: 0.75rem;">
+          <i class="fas fa-plus"></i>
         </button>
       </div>
 
@@ -98,11 +93,15 @@
     </div>
     <div formArrayName="ccMail" class="form-group">
     <label>Emails en copie (CC)</label>
-    <div *ngFor="let ccCtrl of ccMail.controls; let i = index">
-      <input [formControlName]="i" type="email" class="form-control mb-2" placeholder="Email CC" />
-      <button type="button" class="btn btn-danger btn-sm mb-2" (click)="ccMail.removeAt(i)" *ngIf="ccMail.length > 1">Supprimer</button>
+    <div *ngFor="let ccCtrl of ccMail.controls; let i = index" class="d-flex mb-2">
+      <input [formControlName]="i" type="email" class="form-control" placeholder="Email CC" />
+      <button type="button" class="md-btn-icon md-btn-remove" (click)="ccMail.removeAt(i)" title="Supprimer cet email" *ngIf="ccMail.length > 1">
+        <i class="fas fa-trash"></i>
+      </button>
     </div>
-    <button type="button" class="btn btn-primary btn-sm" (click)="ccMail.push(fb.control('', Validators.email))">Ajouter un email CC</button>
+    <button type="button" class="md-btn-icon md-btn-add" (click)="ccMail.push(fb.control('', Validators.email))" title="Ajouter un email CC" style="margin-top: 0.75rem;">
+      <i class="fas fa-plus"></i>
+    </button>
     </div>
     <div class="form-group mb-3">
       <label for="numero">Numéro</label>
@@ -189,7 +188,7 @@
           </option>
         </select>
       </div>
-    <button type="submit" class="btn btn-success" [disabled]="updateForm.invalid">Mettre à jour</button>
-    <button type="button" class="btn btn-secondary" (click)="onCancel()">Annuler</button>
+    <button type="submit" class="btn btn-primary" [disabled]="updateForm.invalid">Mettre à jour</button>
+    <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()">Réinitialiser</button>
   </form>
 </div>

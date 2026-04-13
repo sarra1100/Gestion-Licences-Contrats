@@ -41,7 +41,7 @@ export class AfficherRapid7Component implements OnInit {
            this.changePage(0);
          },
          (error) => {
-           console.error('Erreur rÃ©cupÃ©ration Rapid7s', error);
+           console.error('Erreur récupération Rapid7s', error);
          }
        );
      }
@@ -84,7 +84,7 @@ export class AfficherRapid7Component implements OnInit {
       this.filteredRapid7s = this.filteredRapid7s.filter(rapid7 => rapid7.rapid7Id !== id);
       this.calculatePagination();
       this.changePage(this.currentPage);
-      console.log('Article approuvÃ© et retirÃ© de la liste');
+      console.log('Article approuvé et retiré de la liste');
     });
   }
    
@@ -93,11 +93,11 @@ export class AfficherRapid7Component implements OnInit {
          this.rapid7Service.deleteRapid7(id).subscribe(
            () => {
              this.getAllRapid7s();
-             alert('rapid7 supprimÃ© avec succÃ¨s');
+             alert('rapid7 supprimé avec succès');
            },
            error => {
              console.error('Erreur suppression rapid7', error);
-             alert('Ã‰chec suppression');
+             alert('Échec suppression');
            }
          );
        }

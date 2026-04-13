@@ -1,7 +1,9 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, ViewChild } from '@angular/core';
 import { PaloService } from 'app/Services/palo.service';
 import { Palo } from 'app/Model/Palo';
 import { Router } from '@angular/router';
+import { AjouterPaloComponent } from '../ajouter-palo/ajouter-palo.component';
+import { SearchableClientSelectComponent } from '../../shared/searchable-client-select/searchable-client-select.component';
 
 @Component({
   selector: 'app-afficher-palo',
@@ -19,6 +21,12 @@ export class AfficherPaloComponent implements OnInit {
     pageSize = 10;
     totalPages: number = 0;
     pagedPalos: Palo[] = [];
+
+    showAddModal: boolean = false;
+    showUpdateModal: boolean = false;
+    selectedPaloToUpdate: Palo | null = null;
+
+    @ViewChild(AjouterPaloComponent) ajouterComponent!: AjouterPaloComponent;
   
     constructor(private paloService: PaloService, private router: Router) {}
   
@@ -41,7 +49,7 @@ export class AfficherPaloComponent implements OnInit {
           this.changePage(0);
         },
         (error) => {
-          console.error('Erreur rÃ©cupÃ©ration Fortinets', error);
+          console.error('Erreur récupération Fortinets', error);
         }
       );
     }
@@ -81,12 +89,12 @@ export class AfficherPaloComponent implements OnInit {
   
     approvePalo(id: number): void {
       this.paloService.activate(id).subscribe(() => {
-      // Retirer l'ESET approuvÃ© de la liste des non approuvÃ©s
+      // Retirer l'ESET approuvé de la liste des non approuvés
       this.unapprovedPalos = this.unapprovedPalos.filter(palo => palo.paloId !== id);
       this.filteredPalos = this.filteredPalos.filter(palo => palo.paloId !== id);
       this.calculatePagination();
       this.changePage(this.currentPage);
-      console.log('Article approuvÃ© et retirÃ© de la liste');
+      console.log('Article approuvé et retiré de la liste');
     });
   }
   
@@ -95,22 +103,62 @@ export class AfficherPaloComponent implements OnInit {
         this.paloService.deletePalo(id).subscribe(
           () => {
             this.getAllPalos();
-            alert('Palo supprimÃ© avec succÃ¨s');
+            alert('Palo supprimé avec succès');
           },
           error => {
             console.error('Erreur suppression Palo', error);
-            alert('Ã‰chec suppression');
+            alert('Échec suppression');
           }
         );
       }
     }
   
     updatePalo(palo: Palo): void {
-      this.router.navigate(['/edit-palo', palo.paloId]);
+      this.selectedPaloToUpdate = palo;
+      this.showUpdateModal = true;
     }
   
     goToAddPalo() {
-      this.router.navigate(['/Ajouterpalo']);
+      this.showAddModal = true;
+    }
+
+    closeAddModal() {
+      this.showAddModal = false;
+    }
+
+    onPaloAdded() {
+      this.showAddModal = false;
+      this.getAllPalos();
+    }
+
+    onAddCancelled() {
+      this.showAddModal = false;
+    }
+
+    closeUpdateModal() {
+      this.showUpdateModal = false;
+      this.selectedPaloToUpdate = null;
+    }
+
+    onPaloUpdated() {
+      this.showUpdateModal = false;
+      this.getAllPalos();
+    }
+
+    onUpdateCancelled() {
+      this.showUpdateModal = false;
+      this.selectedPaloToUpdate = null;
+    }
+
+    onModalBodyClick(event: MouseEvent): void {
+      const target = event.target as HTMLElement;
+      const isClickedOnInteractive = target?.closest('input, button, select, .scs-dropdown');
+      
+      if (!isClickedOnInteractive && this.ajouterComponent) {
+        if (this.ajouterComponent.clientSelect) {
+          this.ajouterComponent.clientSelect.closeDropdown();
+        }
+      }
     }
   
     get pageNumbers(): number[] {

@@ -319,29 +319,27 @@ textarea.form-control {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #f36e24, #ff8c42);
+  background: #667eea;
   color: white;
-  
+
   &:hover {
-    background: linear-gradient(135deg, #e55d1a, #f57c32);
-    box-shadow: 0 5px 15px rgba(243, 110, 36, 0.3);
+    background: #5568d3;
   }
-  
+
   &:disabled {
-    background: #ced4da;
-    transform: none;
-    box-shadow: none;
+    background: #d0d7e9;
     cursor: not-allowed;
+    opacity: 0.6;
   }
 }
 
 .btn-secondary {
-  background: linear-gradient(135deg, #6c757d, #868e96);
-  color: white;
-  margin-left: 10px;
-  
+  background: #f0f3f7;
+  color: #333;
+  border: 1px solid #e0e0e0;
+
   &:hover {
-    background: linear-gradient(135deg, #5a6268, #727b84);
+    background: #e8ecf1;
   }
 }
 
@@ -559,6 +557,12 @@ textarea.form-control {
   .form-buttons {
     padding: 10px 0;
   }
+}
+
+/* Client Select Wrapper - High Z-index for Dropdown */
+.client-select-wrapper {
+  position: relative;
+  z-index: 10000;
 }
 
 // Animation pour les champs

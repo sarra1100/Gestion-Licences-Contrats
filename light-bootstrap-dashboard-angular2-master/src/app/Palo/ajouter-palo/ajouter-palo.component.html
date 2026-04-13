@@ -1,15 +1,18 @@
-﻿<div class="container mt-5">
-  <h2 class="text-center mb-4">Ajouter licence Paloalto</h2>
+﻿<form [formGroup]="PaloForm" (ngSubmit)="addPalo()" class="form-wrapper">
+  <h5 class="form-title mb-4">{{ isEditing ? 'Modifier licence Paloalto' : 'Ajouter licence Paloalto' }}</h5>
   
-  <form [formGroup]="PaloForm" (ngSubmit)="addPalo()">
-    <!-- Client -->
-    <div class="form-group mb-3">
-      <label for="client" class="form-label">Client</label>
-      <app-searchable-client-select formControlName="client" [clients]="clients"></app-searchable-client-select>
-      <div *ngIf="PaloForm.get('client')?.touched && PaloForm.get('client')?.invalid" class="text-danger">
-        Ce champ est obligatoire.
-      </div>
+  <!-- Client -->
+  <div class="form-group client-select-wrapper" style="position: relative; z-index: 10000;">
+    <label for="client" class="form-label">Client</label>
+    <app-searchable-client-select 
+      #clientSelect
+      formControlName="client" 
+      [clients]="clients">
+    </app-searchable-client-select>
+    <div *ngIf="PaloForm.get('client')?.touched && PaloForm.get('client')?.invalid" class="text-danger">
+      Ce champ est obligatoire.
     </div>
+  </div>
 
     <!-- Nom du Boîtier -->
     <div class="form-group mb-3">
@@ -67,8 +70,8 @@
       </button>
     </div>
   </div>
-  <button type="button" class="btn btn-secondary mt-2" (click)="addLicence()">
-    Ajouter une licence
+  <button type="button" class="md-btn-icon md-btn-add" (click)="addLicence()" title="Ajouter une licence" style="margin-top: 0.75rem;">
+    <i class="fas fa-plus"></i>
   </button>
 </div>
 
@@ -154,14 +157,18 @@
         <input
           [formControlName]="i"
           type="email"
-          class="form-control me-2"
+          class="form-control"
           placeholder="Email en copie"
         />
-        <button type="button" class="btn btn-danger" (click)="removeCcMail(i)">Supprimer</button>
+        <button type="button" class="md-btn-icon md-btn-remove" (click)="removeCcMail(i)" title="Supprimer cet email">
+          <i class="fas fa-trash"></i>
+        </button>
       </div>
     </div>
   </div>
-  <button type="button" class="btn btn-secondary mt-2" (click)="addCcMail()">Ajouter Email</button>
+  <button type="button" class="md-btn-icon md-btn-add" (click)="addCcMail()" title="Ajouter un email" style="margin-top: 0.75rem;">
+    <i class="fas fa-plus"></i>
+  </button>
 </div>
     <!-- Remarque -->
     <div class="form-group mb-3">
@@ -223,11 +230,10 @@
 
 
 
-    <!-- Bouton Ajouter -->
+    <!-- Bouton Ajouter/Modifier -->
     <button type="submit" class="btn btn-primary" [disabled]="PaloForm.invalid">
-      Ajouter
+      <i class="fas fa-check me-2"></i>{{ isEditing ? 'Modifier' : 'Ajouter' }}
     </button>
-    <button type="button" class="btn btn-secondary" (click)="onCancel()">Annuler</button>
+    <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()">Réinitialiser</button>
+    <button type="button" class="btn btn-outline-secondary ms-2" (click)="onCancel()">Annuler</button>
   </form>
-  
-</div>

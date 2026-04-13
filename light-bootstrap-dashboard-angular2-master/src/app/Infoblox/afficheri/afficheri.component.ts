@@ -52,7 +52,7 @@ export class AfficheriComponent implements OnInit {
           this.changePage(0);
         },
         (error) => {
-          console.error('Erreur rÃ©cupÃ©ration Infobloxs', error);
+          console.error('Erreur récupération Infobloxs', error);
         }
       );
     }
@@ -94,7 +94,7 @@ export class AfficheriComponent implements OnInit {
       this.filteredInfobloxs = this.filteredInfobloxs.filter(infoblox => infoblox.infobloxId !== id);
       this.calculatePagination();
       this.changePage(this.currentPage);
-      console.log('Article approuvÃ© et retirÃ© de la liste');
+      console.log('Article approuvé et retiré de la liste');
     });
   }
   
@@ -103,11 +103,11 @@ export class AfficheriComponent implements OnInit {
         this.infobloxService.deleteInfoblox(id).subscribe(
           () => {
             this.getAllInfobloxs();
-            alert('Infoblox supprimÃ© avec succÃ¨s');
+            alert('Infoblox supprimé avec succès');
           },
           error => {
             console.error('Erreur suppression Infoblox', error);
-            alert('Ã‰chec suppression');
+            alert('Échec suppression');
           }
         );
       }

@@ -41,7 +41,7 @@ export class AfficheraComponent implements OnInit {
         this.changePage(0);
       },
       (error) => {
-        console.error('Erreur rÃ©cupÃ©ration Alwarebytess', error);
+        console.error('Erreur récupération Alwarebytess', error);
       }
     );
   }
@@ -83,7 +83,7 @@ export class AfficheraComponent implements OnInit {
       this.filteredAlwarebytess = this.filteredAlwarebytess.filter(alwarebytes => alwarebytes.alwarebytesId !== id);
       this.calculatePagination();
       this.changePage(this.currentPage);
-      console.log('Article approuvÃ© et retirÃ© de la liste');
+      console.log('Article approuvé et retiré de la liste');
     });
   }
 
@@ -92,11 +92,11 @@ export class AfficheraComponent implements OnInit {
       this.alwarebytesService.deleteAlwarebytes(id).subscribe(
         () => {
           this.getAllAlwarebytess();
-          alert('Alwarebytes supprimÃ© avec succÃ¨s');
+          alert('Alwarebytes supprimé avec succès');
         },
         error => {
           console.error('Erreur suppression Alwarebytes', error);
-          alert('Ã‰chec suppression');
+          alert('Échec suppression');
         }
       );
     }

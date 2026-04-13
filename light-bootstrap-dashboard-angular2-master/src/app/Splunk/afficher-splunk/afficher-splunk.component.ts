@@ -41,7 +41,7 @@ export class AfficherSplunkComponent implements OnInit {
            this.changePage(0);
          },
          (error) => {
-           console.error('Erreur rÃ©cupÃ©ration Splunks', error);
+           console.error('Erreur récupération Splunks', error);
          }
        );
      }
@@ -84,7 +84,7 @@ export class AfficherSplunkComponent implements OnInit {
       this.filteredSplunks = this.filteredSplunks.filter(splunk => splunk.splunkid !== id);
       this.calculatePagination();
       this.changePage(this.currentPage);
-      console.log('Article approuvÃ© et retirÃ© de la liste');
+      console.log('Article approuvé et retiré de la liste');
     });
   }
    
@@ -93,11 +93,11 @@ export class AfficherSplunkComponent implements OnInit {
          this.splunkService.deleteSplunk(id).subscribe(
            () => {
              this.getAllSplunks();
-             alert('Splunk supprimÃ© avec succÃ¨s');
+             alert('Splunk supprimé avec succès');
            },
            error => {
              console.error('Erreur suppression Splunk', error);
-             alert('Ã‰chec suppression');
+             alert('Échec suppression');
            }
          );
        }

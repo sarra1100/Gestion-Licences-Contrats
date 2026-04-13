@@ -9,6 +9,7 @@ import { NomProduit } from 'app/Model/NomProduit';
 import { CommandePasserPar } from 'app/Model/CommandePasserPar';
 import { HttpEventType } from '@angular/common/http';
 import { ClientService, Client } from '../Services/client.service';
+import { SearchableClientSelectComponent } from '../shared/searchable-client-select/searchable-client-select.component';
 
 @Component({
   selector: 'app-products',
@@ -51,6 +52,8 @@ export class ProductsComponent implements OnInit {
   
   // Propriétés dynamiques qui seront remplies depuis l'API
   nomProduitOptions: { value: any; display: string }[] = [];
+  filteredProducts: { value: any; display: string }[] = [];
+  searchProduct: string = '';
   showProductDropdown: boolean = false;
   commandePasserParOptions = [
     { label: 'GI_TN', value: CommandePasserPar.GI_TN },
@@ -59,6 +62,7 @@ export class ProductsComponent implements OnInit {
   ];
 
   @ViewChild('productDropdownWrapper') productDropdownWrapper: ElementRef;
+  @ViewChild('clientSelect') clientSelect: SearchableClientSelectComponent;
 
   constructor(private fb: FormBuilder, 
               private router: Router,
@@ -69,10 +73,18 @@ export class ProductsComponent implements OnInit {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
+    // Fermer le dropdown du produit si clic en dehors
     if (this.showProductDropdown) {
       const clickedInside = this.elementRef.nativeElement.contains(event.target);
       if (!clickedInside) {
         this.showProductDropdown = false;
+      }
+    }
+    // Fermer le dropdown du client si clic en dehors
+    if (this.clientSelect) {
+      const clientElement = this.clientSelect.getElement();
+      if (clientElement && !clientElement.contains(event.target as Node)) {
+        this.clientSelect.closeDropdown();
       }
     }
   }
@@ -94,6 +106,8 @@ export class ProductsComponent implements OnInit {
           value: p.code,
           display: p.label
         }));
+        // Initialiser les produits filtrés
+        this.filteredProducts = [...this.nomProduitOptions];
       },
       (error) => {
         console.error('Erreur lors du chargement des produits', error);
@@ -133,7 +147,7 @@ export class ProductsComponent implements OnInit {
       nom_produit: ['', Validators.required],
       remarque: [''],
       sousContrat: [false],
-      nombre: [0, Validators.required],
+      nombre: ['', [Validators.required, Validators.min(1)]],
       nmb_tlf: [''],
       commandePasserPar: ['', Validators.required],
       dureeDeLicence: [''],
@@ -168,6 +182,36 @@ export class ProductsComponent implements OnInit {
    */
   selectProduct(productCode: string): void {
     this.productForm.patchValue({ nom_produit: productCode });
+    // Afficher le nom du produit au lieu du code dans la barre de recherche
+    const selectedProduct = this.nomProduitOptions.find(p => p.value === productCode);
+    if (selectedProduct) {
+      this.searchProduct = selectedProduct.display;
+    }
+    this.showProductDropdown = false;
+  }
+
+  /**
+   * Filtre les produits basée sur le terme de recherche
+   */
+  filterProducts(searchTerm: string): void {
+    this.searchProduct = searchTerm;
+    this.showProductDropdown = true;
+    if (!searchTerm.trim()) {
+      this.filteredProducts = [...this.nomProduitOptions];
+    } else {
+      const term = searchTerm.toLowerCase();
+      this.filteredProducts = this.nomProduitOptions.filter(product =>
+        product.display.toLowerCase().includes(term)
+      );
+    }
+  }
+
+  /**
+   * Gère le focus sur le champ de recherche
+   */
+  onProductSearchFocus(): void {
+    this.showProductDropdown = true;
+    this.filterProducts(this.searchProduct);
   }
 
   /**
@@ -283,6 +327,18 @@ export class ProductsComponent implements OnInit {
   }
 
   /**
+   * Retourne le nom d'affichage du produit sélectionné
+   */
+  getSelectedProductDisplay(): string {
+    const nomProduitValue = this.productForm.get('nom_produit')?.value;
+    if (!nomProduitValue) {
+      return '';
+    }
+    const selectedProduct = this.nomProduitOptions.find(p => p.value === nomProduitValue);
+    return selectedProduct ? selectedProduct.display : '';
+  }
+
+  /**
    * Convertit un code produit en valeur d'enum NomProduit
    */
   private convertCodeToNomProduit(code: string): NomProduit {
@@ -301,10 +357,6 @@ export class ProductsComponent implements OnInit {
     if (this.productForm.valid) {
       console.log('Valeurs du formulaire:', this.productForm.value);
 
-      // Convertir les valeurs du formulaire en types corrects
-      const nomProduitValue = this.productForm.value.nom_produit;
-      const nomProduitEnum = this.convertCodeToNomProduit(nomProduitValue);
-      
       const newProduct: Eset = {
         esetid: null!,
         client: this.productForm.value.client,
@@ -312,46 +364,44 @@ export class ProductsComponent implements OnInit {
         sousContrat: this.productForm.value.sousContrat || false,
         remarque: this.productForm.value.remarque || '',
         cle_de_Licence: this.productForm.value.cle_de_Licence,
-        nom_produit: nomProduitEnum,  // Valeur d'enum, pas le code
-        nombre: this.productForm.value.nombre || 0,
-        nmb_tlf: this.productForm.value.nmb_tlf || 0,
+        nom_produit: this.productForm.value.nom_produit,  // Garder le code string tel quel, pas convertir en enum
+        nombre: Number(this.productForm.value.nombre) || 0,
+        nmb_tlf: Number(this.productForm.value.nmb_tlf) || 0,
         nom_contact: this.productForm.value.nom_contact || '',
         commandePasserPar: this.productForm.value.commandePasserPar,
         mailAdmin: this.productForm.value.mailAdmin || '',
         mail: this.productForm.value.mail || '',
         dateEx: this.productForm.value.dateEx,
-        dureeDeLicence: this.productForm.value.dureeDeLicence || '',
+        dureeDeLicence: this.productForm.value.dureeDeLicence || null,  // Garder comme chaîne ou null, pas chaîne vide
         typeAchat: this.productForm.value.typeAchat,
-        ccMail: this.ccMail.value || [],
-        approuve: false // Valeur par défaut
+        ccMail: (this.ccMail.value || []).filter((email: string) => email && email.trim()), // Filtrer les emails vides
+        approuve: false
       };
 
       console.log('JSON envoyé:', JSON.stringify(newProduct));
       console.log('Données envoyées au service:', newProduct);
-      console.log('Nom produit envoyé:', newProduct.nom_produit);
 
       this.esetService.addEset(newProduct).subscribe(
         (response: any) => {
           console.log('Produit ajouté avec succès ', response);
-          console.log('Response esetid:', response.esetid);
           
-          // Si un fichier est sélectionné, l'uploader après la création
           const esetId = response.esetid || response.id;
           if (this.selectedFile && esetId) {
             this.uploadFileAfterCreation(esetId);
           } else {
             this.uploadSuccess = true;
             this.uploadMessage = 'Eset ajouté avec succès';
-            this.productAdded.emit();  // Émettre l'événement au lieu de naviguer
+            this.productAdded.emit();
           }
         },
         error => {
           console.error('Erreur lors du l\'ajout du produit', error);
-          window.alert('Échec de l\'ajout du produit: ' + (error.error?.message || error.message || 'Unknown error'));
+          const errorMsg = error.error?.message || error.message || 'Erreur inconnue';
+          console.error('Détail de l\'erreur:', error);
+          window.alert('Échec de l\'ajout du produit: ' + errorMsg);
         }
       );
     } else {
-      // Afficher les erreurs de validation
       this.markFormGroupTouched(this.productForm);
       window.alert('Le formulaire est invalide. Veuillez corriger les erreurs.');
     }

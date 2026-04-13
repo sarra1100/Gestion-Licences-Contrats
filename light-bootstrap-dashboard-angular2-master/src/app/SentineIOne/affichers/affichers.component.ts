@@ -40,7 +40,7 @@ export class AfficherssComponent implements OnInit {
           this.changePage(0);
         },
         (error) => {
-          console.error('Erreur rÃ©cupÃ©ration SentineIOnes', error);
+          console.error('Erreur récupération SentineIOnes', error);
         }
       );
     }
@@ -82,7 +82,7 @@ export class AfficherssComponent implements OnInit {
       this.filteredSentineIOnes = this.filteredSentineIOnes.filter(sentineIOne => sentineIOne.sentineIOneId !== id);
       this.calculatePagination();
       this.changePage(this.currentPage);
-      console.log('Article approuvÃ© et retirÃ© de la liste');
+      console.log('Article approuvé et retiré de la liste');
     });
   }
   
@@ -91,11 +91,11 @@ export class AfficherssComponent implements OnInit {
         this.sentineIOneService.deleteSentineIOne(id).subscribe(
           () => {
             this.getAllSentineIOnes();
-            alert('SentineIOne supprimÃ© avec succÃ¨s');
+            alert('SentineIOne supprimé avec succès');
           },
           error => {
             console.error('Erreur suppression SentineIOne', error);
-            alert('Ã‰chec suppression');
+            alert('Échec suppression');
           }
         );
       }

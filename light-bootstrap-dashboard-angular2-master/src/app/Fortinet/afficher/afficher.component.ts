@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FortinetService } from 'app/Services/fortinet.service';
 import { Fortinet } from 'app/Model/Fortinet';
 import { Router } from '@angular/router';
+import { AjouterComponent } from '../ajouter/ajouter.component';
+import { SearchableClientSelectComponent } from '../../shared/searchable-client-select/searchable-client-select.component';
 
 @Component({
   selector: 'app-afficher',
@@ -23,6 +25,8 @@ export class AfficherComponent implements OnInit {
   showAddModal: boolean = false;
   showUpdateModal: boolean = false;
   selectedFortinetToUpdate: Fortinet | null = null;
+
+  @ViewChild(AjouterComponent) ajouterComponent!: AjouterComponent;
 
   constructor(private fortinetService: FortinetService, private router: Router) {}
 
@@ -155,6 +159,20 @@ export class AfficherComponent implements OnInit {
   onUpdateCancelled() {
     this.showUpdateModal = false;
     this.selectedFortinetToUpdate = null;
+  }
+
+  /**
+   * Gère les clics sur le corps du modal pour fermer les dropdowns
+   */
+  onModalBodyClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    // Vérifier si le clic provient d'un élément interactif
+    const isClickedOnInteractive = target?.closest('input, button, select, .scs-dropdown');
+    
+    // Si le clic n'est pas sur un élément interactif, fermer les dropdowns
+    if (!isClickedOnInteractive && this.ajouterComponent) {
+      this.ajouterComponent.closeClientDropdown();
+    }
   }
 
   get pageNumbers(): number[] {

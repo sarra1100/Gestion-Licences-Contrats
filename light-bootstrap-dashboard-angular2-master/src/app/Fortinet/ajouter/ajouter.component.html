@@ -2,9 +2,13 @@
   <h5 class="form-title mb-4">Ajouter licence Fortinet</h5>
 
   <!-- Client -->
-  <div class="form-group">
+  <div class="form-group client-select-wrapper" style="position: relative; z-index: 10000;">
     <label for="client" class="form-label">Client</label>
-    <app-searchable-client-select formControlName="client" [clients]="clients"></app-searchable-client-select>
+    <app-searchable-client-select 
+      #clientSelect
+      formControlName="client" 
+      [clients]="clients">
+    </app-searchable-client-select>
     <div *ngIf="fortinetForm.get('client')?.touched && fortinetForm.get('client')?.invalid" class="text-danger">
       Ce champ est obligatoire.
     </div>
@@ -88,8 +92,8 @@
           ×
         </button>
       </div>
-      <button type="button" class="btn btn-secondary mt-2" (click)="addLicence()">
-        + Ajouter une licence
+      <button type="button" class="md-btn-icon md-btn-add" (click)="addLicence()" title="Ajouter une licence" style="margin-top: 0.75rem;">
+        <i class="fas fa-plus"></i>
       </button>
     </div>
   </div>
@@ -159,7 +163,9 @@
         </div>
       </div>
     </div>
-    <button type="button" class="btn btn-secondary mt-2" (click)="addCcMail()">+ Ajouter Email</button>
+    <button type="button" class="md-btn-icon md-btn-add" (click)="addCcMail()" title="Ajouter un email" style="margin-top: 0.75rem;">
+      <i class="fas fa-plus"></i>
+    </button>
   </div>
 
   <!-- Remarque -->

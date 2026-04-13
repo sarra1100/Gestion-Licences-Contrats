@@ -74,7 +74,7 @@ h2 {
     text-align: left;
     font-weight: bold;
     font-size: 1.1rem;
-    color: #f36e24 !important;
+    color: #667eea !important;
     border-bottom: 2px solid #ddd;
   }
 }
@@ -171,15 +171,15 @@ h2 {
     font-size: 1rem;
     
     &.active {
-      background-color: #f36e24 !important;
+      background-color: #667eea !important;
       color: white !important;
       font-weight: bold;
-      border-color: #f36e24 !important;
+      border-color: #667eea !important;
     }
     
     &:hover:not(.active) {
-      border-color: #f36e24;
-      color: #f36e24;
+      border-color: #667eea;
+      color: #667eea;
     }
   }
 }

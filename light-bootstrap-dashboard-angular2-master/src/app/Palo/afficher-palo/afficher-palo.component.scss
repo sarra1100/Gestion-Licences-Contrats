@@ -30,7 +30,7 @@
 }
 
 .action-button {
-  background: #f36e24;
+  background: #667eea;
   border: none;
   color: #fff;
   border-radius: 6px;
@@ -76,12 +76,12 @@
   gap: 10px;
   transition: all 0.2s;
 
-  &:hover { border-color: #f36e24; box-shadow: 0 2px 8px rgba(243,110,36,0.12); }
+  &:hover { border-color: #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.12); }
 }
 
 .md-item-active {
-  border-color: #f36e24 !important;
-  background: #fff8f4 !important;
+  border-color: #667eea !important;
+  background: #f5f7ff !important;
 }
 
 .md-item-info { flex: 1; min-width: 0; }
@@ -145,8 +145,8 @@
   gap: 4px;
 
   .btn.active {
-    background: #f36e24;
-    border-color: #f36e24;
+    background: #667eea;
+    border-color: #667eea;
     color: #fff;
     font-weight: bold;
   }
@@ -169,7 +169,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 14px 18px;
-  background: #f36e24;
+  background: #667eea;
   color: #fff;
 
   h4 { margin: 0; font-size: 1.1rem; font-weight: 700; }
@@ -196,7 +196,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #f36e24;
+  color: #667eea;
   margin: 10px 0 8px;
 }
 
@@ -244,7 +244,7 @@
   font-size: 0.78rem;
   font-weight: 600;
 }
-.md-badge-orange { background: #fff0e6; color: #f36e24; border: 1px solid #f36e24; }
+.md-badge-orange { background: #f5f7ff; color: #667eea; border: 1px solid #667eea; }
 .md-badge-green  { background: #e6f7ee; color: #28a745; border: 1px solid #28a745; }
 .md-badge-gray   { background: #f0f0f0; color: #777;    border: 1px solid #ccc; }
 

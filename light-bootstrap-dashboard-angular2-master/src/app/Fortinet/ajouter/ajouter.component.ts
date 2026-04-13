@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+﻿import { Component, OnInit, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Fortinet } from 'app/Model/Fortinet';
@@ -6,6 +6,7 @@ import { FortinetService } from 'app/Services/fortinet.service';
 import { CommandePasserPar } from 'app/Model/CommandePasserPar';
 import { HttpEventType } from '@angular/common/http';
 import { ClientService, Client } from '../../Services/client.service';
+import { SearchableClientSelectComponent } from '../../shared/searchable-client-select/searchable-client-select.component';
 
 @Component({
   selector: 'app-ajouter',
@@ -23,6 +24,8 @@ export class AjouterComponent implements OnInit {
   selectedFile: File | null = null;
   uploadMessage: string | null = null;
   uploadSuccess = false;
+
+  @ViewChild('clientSelect') clientSelect: SearchableClientSelectComponent | undefined;
 
   commandePasserParOptions = [
   { label: 'GI_TN', value: CommandePasserPar.GI_TN },
@@ -246,5 +249,14 @@ resetForm(): void {
         this.fortinetAdded.emit();
       }
     });
+  }
+
+  /**
+   * Ferme le dropdown du client
+   */
+  closeClientDropdown(): void {
+    if (this.clientSelect) {
+      this.clientSelect.closeDropdown();
+    }
   }
 }
