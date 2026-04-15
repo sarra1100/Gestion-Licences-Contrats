@@ -3,12 +3,15 @@
   <div class="header-row">
     <h2>Licences ESET</h2>
     <div class="action-group">
-      <button (click)="goToProducts()" class="btn btn-sm action-button">
+      <button (click)="openAddEsetModal()" class="btn btn-sm btn-primary action-button" title="Ajouter une nouvelle ESET" *ngIf="permissionService.canAdd('licenses')">
         <i class="fa fa-plus"></i>
+      </button>
+      <button (click)="openAddProductModal()" class="btn btn-sm btn-success action-button" title="Ajouter un nouveau produit" *ngIf="permissionService.canAdd('products')">
+        <i class="fa fa-plus"></i> Ajouter un nouveau produit
       </button>
       <div class="input-group search-box">
         <input type="text" class="form-control" placeholder="Rechercher..." [(ngModel)]="searchTerm"
-          (input)="onSearch()" />
+          (input)="onSearch()" *ngIf="permissionService.canView('licenses')" />
       </div>
     </div>
   </div>
@@ -35,16 +38,16 @@
 
           <!-- Actions : œil + modifier + supprimer + approuver en colonne -->
           <div class="md-item-actions" (click)="$event.stopPropagation()">
-            <button class="md-btn-icon md-btn-view" (click)="selectEset(eset)" title="Voir détails">
+            <button class="md-btn-icon md-btn-view" (click)="selectEset(eset)" title="Voir détails" *ngIf="permissionService.canView('licenses')">
               <i class="fas fa-eye"></i>
             </button>
-            <button class="md-btn-icon md-btn-edit" (click)="updateEset(eset)" title="Modifier">
+            <button class="md-btn-icon md-btn-edit" (click)="updateEset(eset)" title="Modifier" *ngIf="permissionService.canEditProduct('eset')">
               <i class="fas fa-pen"></i>
             </button>
-            <button class="md-btn-icon md-btn-delete" (click)="deleteEset(eset.esetid)" title="Supprimer">
+            <button class="md-btn-icon md-btn-delete" (click)="deleteEset(eset.esetid)" title="Supprimer" *ngIf="permissionService.canDeleteProduct('eset')">
               <i class="fas fa-trash"></i>
             </button>
-            <button class="md-btn-icon md-btn-approve" (click)="aprouve(eset.esetid)" title="Expirer">
+            <button class="md-btn-icon md-btn-approve" (click)="aprouve(eset.esetid)" title="Expirer" *ngIf="permissionService.canEditProduct('eset')">
               <i class="fas fa-check"></i>
             </button>
           </div>
@@ -169,13 +172,13 @@
 
           <!-- Actions -->
           <div class="md-detail-actions">
-            <button (click)="updateEset(selectedEset)" class="btn btn-sm btn-primary">
+            <button (click)="updateEset(selectedEset)" class="btn btn-sm btn-primary" *ngIf="permissionService.canEdit('licenses')">
               <i class="fas fa-pen"></i> Modifier
             </button>
-            <button (click)="deleteEset(selectedEset.esetid)" class="btn btn-sm btn-danger">
+            <button (click)="deleteEset(selectedEset.esetid)" class="btn btn-sm btn-danger" *ngIf="permissionService.canDelete('licenses')">
               <i class="fas fa-trash"></i> Supprimer
             </button>
-            <button (click)="aprouve(selectedEset.esetid)" class="btn btn-sm btn-success">
+            <button (click)="aprouve(selectedEset.esetid)" class="btn btn-sm btn-success" *ngIf="permissionService.canEdit('licenses')">
               <i class="fas fa-check"></i> Expirer
             </button>
           </div>
@@ -223,6 +226,61 @@
     <div class="modal-body">
       <!-- Incorporation du UpdateEsetComponent -->
       <app-update-eset [esetToEdit]="selectedEsetToUpdate!" (updated)="onEsetUpdated()" (cancelled)="onUpdateCancelled()"></app-update-eset>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ MODAL AJOUTER PRODUIT ════════════════════ -->
+<div class="modal-overlay" *ngIf="showAddProductsModal" (click)="closeAddProductModal()">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-section">
+        <i class="fas fa-cube modal-icon"></i>
+        <h4>Ajouter un nouveau produit</h4>
+      </div>
+      <button type="button" class="close-btn" (click)="closeAddProductModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Incorporation du composant d'ajout de produit -->
+      <div style="padding: 2rem;">
+        <div class="form-group">
+          <label for="newProductName" class="form-label" style="font-weight: 600; margin-bottom: 0.5rem;">
+            Nom du Produit *
+          </label>
+          <input
+            type="text"
+            id="newProductName"
+            class="form-control"
+            [(ngModel)]="newProductName"
+            placeholder="Ex: ESET PROTECT Entry"
+            (keyup.enter)="submitNewProduct()"
+          />
+          <small class="text-danger" *ngIf="newProductError" style="margin-top: 0.3rem; display: block;">
+            {{ newProductError }}
+          </small>
+        </div>
+        
+        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+          <button 
+            type="button" 
+            class="btn btn-secondary"
+            (click)="closeAddProductModal()"
+          >
+            <i class="fas fa-times"></i> Annuler
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-success"
+            (click)="submitNewProduct()"
+            [disabled]="!newProductName || newProductName.trim().length < 3"
+          >
+            <i class="fas fa-check"></i> Ajouter
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>

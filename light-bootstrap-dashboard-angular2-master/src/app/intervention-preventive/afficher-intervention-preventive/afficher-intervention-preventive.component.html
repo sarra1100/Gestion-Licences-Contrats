@@ -15,7 +15,7 @@
         <input type="text" class="ip-search-input" placeholder="Rechercher un client, email…" [(ngModel)]="searchTerm"
           (input)="search()" />
       </div>
-      <button (click)="openAddModal()" class="ip-btn-add" title="Ajouter une intervention" *ngIf="isAdmin()">
+      <button (click)="openAddModal()" class="ip-btn-add" title="Ajouter une intervention" *ngIf="permissionService.canAdd('preventive_interventions')">
         <i class="fas fa-plus"></i> Nouvelle intervention
       </button>
     </div>
@@ -101,11 +101,11 @@
                 </span>
               </td>
               <td class="col-actions" (click)="$event.stopPropagation()">
-                <button class="btn-row-action btn-row-edit" (click)="openEditModal(intervention)" title="Modifier">
+                <button class="btn-row-action btn-row-edit" (click)="openEditModal(intervention)" title="Modifier" *ngIf="permissionService.canEdit('preventive_interventions')">
                   <i class="fas fa-pen"></i>
                 </button>
                 <button class="btn-row-action btn-row-delete" (click)="confirmDelete(intervention)" title="Supprimer"
-                  *ngIf="isAdmin()">
+                  *ngIf="permissionService.canDelete('preventive_interventions')">
                   <i class="fas fa-trash"></i>
                 </button>
               </td>
@@ -189,11 +189,11 @@
                 <span class="ct-badge badge-success">Terminé</span>
               </td>
               <td class="col-actions" (click)="$event.stopPropagation()">
-                <button class="btn-row-action btn-row-edit" (click)="openEditModal(intervention)" title="Modifier">
+                <button class="btn-row-action btn-row-edit" (click)="openEditModal(intervention)" title="Modifier" *ngIf="permissionService.canEdit('preventive_interventions')">
                   <i class="fas fa-pen"></i>
                 </button>
                 <button class="btn-row-action btn-row-delete" (click)="confirmDelete(intervention)" title="Supprimer"
-                  *ngIf="isAdmin()">
+                  *ngIf="permissionService.canDelete('preventive_interventions')">
                   <i class="fas fa-trash"></i>
                 </button>
               </td>
@@ -277,11 +277,11 @@
                 <span class="ct-badge badge-danger">En Retard</span>
               </td>
               <td class="col-actions" (click)="$event.stopPropagation()">
-                <button class="btn-row-action btn-row-edit" (click)="openEditModal(intervention)" title="Modifier">
+                <button class="btn-row-action btn-row-edit" (click)="openEditModal(intervention)" title="Modifier" *ngIf="permissionService.canEdit('preventive_interventions')">
                   <i class="fas fa-pen"></i>
                 </button>
                 <button class="btn-row-action btn-row-delete" (click)="confirmDelete(intervention)" title="Supprimer"
-                  *ngIf="isAdmin()">
+                  *ngIf="permissionService.canDelete('preventive_interventions')">
                   <i class="fas fa-trash"></i>
                 </button>
               </td>
@@ -439,7 +439,7 @@
     <!-- Footer -->
     <div class="detail-popup-footer-v2">
       <button class="btn btn-secondary" (click)="closeDetailPopup()">Fermer</button>
-      <button class="btn btn-primary" (click)="openEditModal(selectedIntervention!); closeDetailPopup()">
+      <button class="btn btn-primary" (click)="openEditModal(selectedIntervention!); closeDetailPopup()" *ngIf="permissionService.canEdit('preventive_interventions')">
         <i class="fas fa-pen"></i> Modifier
       </button>
     </div>

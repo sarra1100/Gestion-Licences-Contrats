@@ -39,7 +39,7 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<Map<String, String>> Login(@RequestBody LoginRequest loginRequest) {
-        String jwt = userService.Login(loginRequest.getEmail(), loginRequest.getPassword());
+        String jwt = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
         System.out.println("Generated JWT: " + jwt);
 
         Map<String, String> response = new HashMap<>();
@@ -75,9 +75,13 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Error: Email is already in use!");
         }
 
-        // Check if the role is either CLIENT or CHEF
-        if (user.getRole() != Role_Enum.ROLE_COMMERCIAL && user.getRole() != Role_Enum.ROLE_MANAGER && user.getRole() != Role_Enum.ROLE_TECHNIQUE) {
-            return ResponseEntity.badRequest().body("Error: Invalid role selected! Only 'Commercial', 'Manager' or 'Technique' roles are allowed.");
+        // Check if the role is valid
+        if (user.getRole() != Role_Enum.ROLE_COMMERCIAL && 
+            user.getRole() != Role_Enum.ROLE_TECHNIQUE &&
+            user.getRole() != Role_Enum.ROLE_ADMIN_COMMERCIAL &&
+            user.getRole() != Role_Enum.ROLE_ADMIN_TECHNIQUE &&
+            user.getRole() != Role_Enum.ROLE_SUPER_ADMIN) {
+            return ResponseEntity.badRequest().body("Error: Invalid role selected! Only 'Commercial', 'Technique', 'Admin Commercial', 'Admin Technique', or 'Super Admin' roles are allowed.");
         }
 
         // Encode the password

@@ -82,9 +82,12 @@ export class AuthService {
       const payload = token.split('.')[1];
       const decoded = JSON.parse(atob(payload));
       return {
-        userId: decoded.userId,
+        id: decoded.userId,          // ← Ajouter 'id' pour compatibilité
+        userId: decoded.userId,      // ← Garder aussi 'userId'
         email: decoded.sub,
-        role: decoded.role
+        role: decoded.role,
+        firstname: decoded.firstname || '',
+        lastname: decoded.lastname || ''
       };
     } catch (e) {
       console.error('Erreur lors du décodage du token:', e);

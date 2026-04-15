@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { VeeamService } from 'app/Services/veeam.service';
 import { Veeam } from 'app/Model/Veeam';
 import { Router } from '@angular/router';
+import { PermissionService } from 'app/Services/permission.service';
 
 @Component({
   selector: 'app-affichervee',
@@ -21,7 +22,7 @@ export class AfficherveeComponent implements OnInit {
   pagedVeeams: Veeam[] = [];
 
 
-  constructor(private veeamService: VeeamService, private router: Router) {}
+  constructor(private veeamService: VeeamService, private router: Router, public permissionService: PermissionService) {}
 
   ngOnInit(): void {
     this.getAllVeeams();

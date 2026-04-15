@@ -10,15 +10,40 @@
     <!-- Menu principal - même contenu pour desktop et mobile -->
     <ul class="nav responsive-nav">
         <ng-container *ngFor="let menuItem of menuItems">
-            <!-- Menu sans sous-menu -->
-            <li routerLinkActive="active" *ngIf="!menuItem.children" class="{{menuItem.class}}">
+            <!-- Tableau de bord - visible pour tous -->
+            <li routerLinkActive="active" *ngIf="!menuItem.children && menuItem.path === '/dashboard'" class="{{menuItem.class}}">
                 <a [routerLink]="[menuItem.path]">
                     <i class="{{menuItem.icon}}"></i>
                     <p>{{menuItem.title}}</p>
                 </a>
             </li>
-            <!-- Menu avec sous-menu -->
-            <li *ngIf="menuItem.children" class="{{menuItem.class}} has-submenu" [class.open]="menuItem.isOpen" routerLinkActive="active">
+            
+            <!-- Utilisateur - visible seulement pour les admins -->
+            <li routerLinkActive="active" *ngIf="!menuItem.children && menuItem.path === '/user' && permissionService.canView('users')" class="{{menuItem.class}}">
+                <a [routerLink]="[menuItem.path]">
+                    <i class="{{menuItem.icon}}"></i>
+                    <p>{{menuItem.title}}</p>
+                </a>
+            </li>
+            
+            <!-- Produits (Licences) - visible pour Commercial et admins -->
+            <li routerLinkActive="active" *ngIf="!menuItem.children && menuItem.path === '/table' && permissionService.canView('licenses')" class="{{menuItem.class}}">
+                <a [routerLink]="[menuItem.path]">
+                    <i class="{{menuItem.icon}}"></i>
+                    <p>{{menuItem.title}}</p>
+                </a>
+            </li>
+            
+            <!-- Produits Expirés - visible pour Commercial et admins -->
+            <li routerLinkActive="active" *ngIf="!menuItem.children && menuItem.path === '/typography' && permissionService.canView('licenses')" class="{{menuItem.class}}">
+                <a [routerLink]="[menuItem.path]">
+                    <i class="{{menuItem.icon}}"></i>
+                    <p>{{menuItem.title}}</p>
+                </a>
+            </li>
+            
+            <!-- Suivi des contrats - visible seulement pour Technique et admins -->
+            <li *ngIf="menuItem.children && menuItem.path === '/contrats' && permissionService.canView('contracts')" class="{{menuItem.class}} has-submenu" [class.open]="menuItem.isOpen" routerLinkActive="active">
                 <a class="parent-menu">
                     <a [routerLink]="[menuItem.path]" class="menu-link">
                         <i class="{{menuItem.icon}}"></i>
@@ -36,6 +61,30 @@
                         </a>
                     </li>
                 </ul>
+            </li>
+            
+            <!-- Historique Contrats - visible seulement pour Technique et admins -->
+            <li routerLinkActive="active" *ngIf="!menuItem.children && menuItem.path === '/historique-contrats' && permissionService.canView('contracts')" class="{{menuItem.class}}">
+                <a [routerLink]="[menuItem.path]">
+                    <i class="{{menuItem.icon}}"></i>
+                    <p>{{menuItem.title}}</p>
+                </a>
+            </li>
+            
+            <!-- Clients - visible seulement pour Technique et admins -->
+            <li routerLinkActive="active" *ngIf="!menuItem.children && menuItem.path === '/client-stats' && permissionService.canView('clients')" class="{{menuItem.class}}">
+                <a [routerLink]="[menuItem.path]">
+                    <i class="{{menuItem.icon}}"></i>
+                    <p>{{menuItem.title}}</p>
+                </a>
+            </li>
+            
+            <!-- Profil - visible pour tous -->
+            <li routerLinkActive="active" *ngIf="!menuItem.children && menuItem.path === '/profile'" class="{{menuItem.class}}">
+                <a [routerLink]="[menuItem.path]">
+                    <i class="{{menuItem.icon}}"></i>
+                    <p>{{menuItem.title}}</p>
+                </a>
             </li>
         </ng-container>
     </ul>

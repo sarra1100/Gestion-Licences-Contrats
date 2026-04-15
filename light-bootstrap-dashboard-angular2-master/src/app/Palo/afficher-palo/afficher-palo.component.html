@@ -22,10 +22,10 @@
             </div>
           </div>
           <div class="md-item-actions" (click)="$event.stopPropagation()">
-            <button class="md-btn-icon md-btn-view" (click)="selectPalo(x)" title="Voir details"><i class="fas fa-eye"></i></button>
-            <button class="md-btn-icon md-btn-edit" (click)="updatePalo(p)"><i class="fas fa-pen"></i></button>
-            <button class="md-btn-icon md-btn-delete" (click)="deletePalo(p.paloId)"><i class="fas fa-trash"></i></button>
-            <button class="md-btn-icon md-btn-approve" (click)="approvePalo(p.paloId)"><i class="fas fa-check"></i></button>
+            <button class="md-btn-icon md-btn-view" (click)="selectPalo(p)" title="Voir details"><i class="fas fa-eye"></i></button>
+            <button class="md-btn-icon md-btn-edit" (click)="updatePalo(p)" *ngIf="permissionService.canEditProduct('palo')"><i class="fas fa-pen"></i></button>
+            <button class="md-btn-icon md-btn-delete" (click)="deletePalo(p.paloId)" *ngIf="permissionService.canDeleteProduct('palo')"><i class="fas fa-trash"></i></button>
+            <button class="md-btn-icon md-btn-approve" (click)="approvePalo(p.paloId)" *ngIf="permissionService.canEditProduct('palo')"><i class="fas fa-check"></i></button>
           </div>
         </div>
         <div *ngIf="pagedPalos.length === 0" class="md-empty"><i class="fas fa-folder-open"></i><p>Aucun Palo trouvé.</p></div>
@@ -64,9 +64,9 @@
           </div>
           <div class="md-detail-divider"></div>
           <div class="md-detail-actions">
-            <button (click)="updatePalo(selectedPalo)" class="btn btn-sm btn-primary"><i class="fas fa-pen"></i> Modifier</button>
-            <button (click)="deletePalo(selectedPalo.paloId)" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Supprimer</button>
-            <button (click)="approvePalo(selectedPalo.paloId)" class="btn btn-sm btn-success"><i class="fas fa-check"></i> Approuver</button>
+            <button (click)="updatePalo(selectedPalo)" class="btn btn-sm btn-primary" *ngIf="permissionService.canEditProduct('palo')"><i class="fas fa-pen"></i> Modifier</button>
+            <button (click)="deletePalo(selectedPalo.paloId)" class="btn btn-sm btn-danger" *ngIf="permissionService.canDeleteProduct('palo')"><i class="fas fa-trash"></i> Supprimer</button>
+            <button (click)="approvePalo(selectedPalo.paloId)" class="btn btn-sm btn-success" *ngIf="permissionService.canEditProduct('palo')"><i class="fas fa-check"></i> Approuver</button>
           </div>
         </div>
       </div>

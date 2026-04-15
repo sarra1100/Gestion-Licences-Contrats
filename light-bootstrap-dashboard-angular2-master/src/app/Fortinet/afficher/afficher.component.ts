@@ -4,6 +4,7 @@ import { Fortinet } from 'app/Model/Fortinet';
 import { Router } from '@angular/router';
 import { AjouterComponent } from '../ajouter/ajouter.component';
 import { SearchableClientSelectComponent } from '../../shared/searchable-client-select/searchable-client-select.component';
+import { PermissionService } from 'app/Services/permission.service';
 
 @Component({
   selector: 'app-afficher',
@@ -28,7 +29,7 @@ export class AfficherComponent implements OnInit {
 
   @ViewChild(AjouterComponent) ajouterComponent!: AjouterComponent;
 
-  constructor(private fortinetService: FortinetService, private router: Router) {}
+  constructor(private fortinetService: FortinetService, private router: Router, public permissionService: PermissionService) {}
 
   ngOnInit(): void {
     this.getAllFortinets();

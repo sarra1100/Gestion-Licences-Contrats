@@ -167,9 +167,13 @@
                 </div>
                 <div class="col-md-6">
                   <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" class="form-control" [value]="currentUser.email" readonly
-                           style="background-color: #f8f9fa;">
+                    <label>Email *</label>
+                    <input type="email" class="form-control" formControlName="email"
+                           [class.is-invalid]="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
+                    <div *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched" 
+                         class="invalid-feedback">
+                      Email valide requis
+                    </div>
                   </div>
                 </div>
               </div>

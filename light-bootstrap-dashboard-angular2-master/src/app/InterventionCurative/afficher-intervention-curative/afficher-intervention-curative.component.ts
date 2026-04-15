@@ -4,6 +4,7 @@ import { InterventionCurativeService } from 'app/Services/intervention-curative.
 import { InterventionCurative } from 'app/Model/InterventionCurative';
 import { ClientService, Client } from '../../Services/client.service';
 import { PRODUIT_LIST } from '../../Model/NomProduit';
+import { PermissionService } from 'app/Services/permission.service';
 
 @Component({
   selector: 'app-afficher-intervention-curative',
@@ -41,7 +42,8 @@ export class AfficherInterventionCurativeComponent implements OnInit {
   constructor(
     private interventionCurativeService: InterventionCurativeService,
     private fb: FormBuilder,
-    private clientService: ClientService) { }
+    private clientService: ClientService,
+    public permissionService: PermissionService) { }
 
   ngOnInit(): void {
     this.clientService.getAllClients().subscribe(data => this.clients = data);

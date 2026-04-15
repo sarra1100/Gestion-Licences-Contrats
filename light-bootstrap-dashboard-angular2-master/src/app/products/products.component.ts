@@ -10,6 +10,7 @@ import { CommandePasserPar } from 'app/Model/CommandePasserPar';
 import { HttpEventType } from '@angular/common/http';
 import { ClientService, Client } from '../Services/client.service';
 import { SearchableClientSelectComponent } from '../shared/searchable-client-select/searchable-client-select.component';
+import { PermissionService } from '../Services/permission.service';
 
 @Component({
   selector: 'app-products',
@@ -69,7 +70,8 @@ export class ProductsComponent implements OnInit {
               private esetService: EsetService,
               private clientService: ClientService,
               private produitService: ProduitService,
-              private elementRef: ElementRef) { }
+              private elementRef: ElementRef,
+              public permissionService: PermissionService) { }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {

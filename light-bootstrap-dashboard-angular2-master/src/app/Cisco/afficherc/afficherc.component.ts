@@ -2,6 +2,7 @@
 import { CiscoService } from 'app/Services/cisco.service';
 import { Cisco } from 'app/Model/Cisco';
 import { Router } from '@angular/router';
+import { PermissionService } from 'app/Services/permission.service';
 @Component({
   selector: 'app-afficherc',
   templateUrl: './afficherc.component.html',
@@ -20,7 +21,7 @@ export class AffichercComponent implements OnInit {
      totalPages: number = 0;
      pagedCiscos:Cisco[] = [];
  
-   constructor(private ciscoService: CiscoService, private router: Router) {}
+   constructor(private ciscoService: CiscoService, private router: Router, public permissionService: PermissionService) {}
  
   ngOnInit(): void {
       this.getAllCiscos();

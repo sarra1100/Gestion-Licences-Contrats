@@ -3,7 +3,7 @@
   <div class="header-row">
     <h2>Interventions Curatives</h2>
     <div class="action-group">
-      <button (click)="openAddModal()" class="btn btn-sm action-button">
+      <button (click)="openAddModal()" class="btn btn-sm action-button" *ngIf="permissionService.canAdd('curative_interventions')">
         <i class="fa fa-plus"></i>
       </button>
       <div class="input-group search-box">
@@ -80,10 +80,10 @@
           </td>
           <td>
             <div class="d-flex flex-row gap-1">
-              <button (click)="openEditModal(intervention)" class="btn btn-sm btn-primary">
+              <button (click)="openEditModal(intervention)" class="btn btn-sm btn-primary" *ngIf="permissionService.canEdit('curative_interventions')">
                 <i class="fas fa-pen"></i>
               </button>
-              <button (click)="deleteIntervention(intervention.interventionCurativeId)" class="btn btn-sm btn-danger">
+              <button (click)="deleteIntervention(intervention.interventionCurativeId)" class="btn btn-sm btn-danger" *ngIf="permissionService.canDelete('curative_interventions')">
                 <i class="fas fa-trash"></i>
               </button>
             </div>

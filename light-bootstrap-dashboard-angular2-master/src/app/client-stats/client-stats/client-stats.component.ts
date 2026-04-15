@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ClientStatsService } from '../../Services/client-stats.service';
 import { ClientService, Client } from '../../Services/client.service';
 import { ClientStats } from '../../Model/ClientStats';
+import { PermissionService } from '../../Services/permission.service';
 
 @Component({
   selector: 'app-client-stats',
@@ -47,7 +48,8 @@ export class ClientStatsComponent implements OnInit {
 
   constructor(
     private clientStatsService: ClientStatsService,
-    private clientService: ClientService
+    private clientService: ClientService,
+    public permissionService: PermissionService
   ) {}
 
   ngOnInit(): void {

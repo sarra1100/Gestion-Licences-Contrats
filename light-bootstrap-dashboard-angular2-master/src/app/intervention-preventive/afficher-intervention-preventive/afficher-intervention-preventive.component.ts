@@ -6,6 +6,7 @@ import { NotificationAppService } from '../../Services/notification.service';
 import { InterventionPreventive, IntervenantPreventif, StatutInterventionPreventive } from '../../Model/InterventionPreventive';
 import { ClientService, Client } from '../../Services/client.service';
 import { PRODUIT_LIST } from '../../Model/NomProduit';
+import { PermissionService } from '../../Services/permission.service';
 
 @Component({
   selector: 'app-afficher-intervention-preventive',
@@ -58,7 +59,8 @@ export class AfficherInterventionPreventiveComponent implements OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     private notificationService: NotificationAppService,
-    private clientService: ClientService) {
+    private clientService: ClientService,
+    public permissionService: PermissionService) {
     this.initForm();
     this.techSubForm = this.fb.group({
       dateIntervention: [''],

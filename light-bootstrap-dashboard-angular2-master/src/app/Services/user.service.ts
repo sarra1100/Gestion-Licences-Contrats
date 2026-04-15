@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { ApiService } from './api.service';
 import { User } from 'app/Model/User';
 import { Observable } from 'rxjs';
 
@@ -7,31 +8,35 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class UserService {
-  private baseUrl = 'http://localhost:8089/Users';
+  private baseUrl = '/Users';
 
-  constructor(private http: HttpClient) { }
+  constructor(private apiService: ApiService) { }
 
-  getAllUsers(): Observable<User[]> {
-    return this.http.get<User[]>(this.baseUrl);
+  getAllUsers(): Observable<any[]> {
+    return this.apiService.get(this.baseUrl);
+  }
+
+  getAvailableUsersForMessaging(): Observable<any[]> {
+    return this.apiService.get(`${this.baseUrl}/available-for-messaging`);
   }
 
   createUser(user: User): Observable<User> {
-    return this.http.post<User>(this.baseUrl, user);
+    return this.apiService.post(this.baseUrl, user);
   }
 
   updateUser(id: number, user: User): Observable<User> {
-    return this.http.put<User>(`${this.baseUrl}/${id}`, user);
+    return this.apiService.put(`${this.baseUrl}/${id}`, user);
   }
 
   deleteUser(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+    return this.apiService.delete(`${this.baseUrl}/${id}`);
   }
 
   activateUser(id: number): Observable<void> {
-    return this.http.put<void>(`${this.baseUrl}/${id}/activate`, {});
+    return this.apiService.put(`${this.baseUrl}/${id}/activate`, {});
   }
 
   deactivateUser(id: number): Observable<void> {
-    return this.http.put<void>(`${this.baseUrl}/${id}/deactivate`, {});
+    return this.apiService.put(`${this.baseUrl}/${id}/deactivate`, {});
   }
 }

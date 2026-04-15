@@ -98,9 +98,10 @@
                   type="button"
                   class="md-btn-icon md-btn-remove"
                   (click)="deleteProduct(product.value); $event.stopPropagation()"
-                  *ngIf="isAdmin()"
+                  *ngIf="permissionService.canDelete('products')"
                   title="Supprimer ce produit"
                   (mousedown)="$event.preventDefault()"
+                  style="padding: 0.3rem 0.5rem; font-size: 0.8rem;"
                 >
                   <i class="fas fa-trash"></i>
                 </button>
@@ -116,18 +117,6 @@
               Aucun produit ne correspond à "{{ searchProduct }}"
             </div>
           </div>
-          
-          <!-- Bouton + pour ajouter (Admin seulement) -->
-          <button 
-            type="button" 
-            class="md-btn-icon md-btn-add"
-            (click)="openAddProduitModal()"
-            *ngIf="isAdmin()"
-            title="Ajouter un nouveau produit"
-            style="position: relative; z-index: 100;"
-          >
-            <i class="fas fa-plus"></i>
-          </button>
         </div>
         <!-- Valeur sélectionnée affichée -->
         <div *ngIf="productForm.get('nom_produit')?.value">
@@ -372,58 +361,4 @@
       <button type="reset" class="btn btn-secondary">Réinitialiser</button>
     </div>
   </form>
-</div>
-
-<!-- Modal simple pour ajouter un produit -->
-<div *ngIf="showQuickAddProduit" class="modal-backdrop show" style="display: block; background-color: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1040;">
-  <div class="modal show" style="display: block; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050; width: 400px; border-radius: 12px; box-shadow: 0 5px 30px rgba(0,0,0,0.3); background: white;">
-    <div class="modal-header" style="background: #ffc107; color: #333; padding: 1.5rem; border-bottom: 2px solid #ffb300; display: flex; justify-content: space-between; align-items: center;">
-      <h5 style="margin: 0; font-weight: 700;">Ajouter un nouveau produit</h5>
-      <button 
-        type="button" 
-        class="btn-close"
-        (click)="closeAddProduitModal()"
-        style="background: none; border: none; font-size: 1.5rem; cursor: pointer;"
-      >
-        ×
-      </button>
-    </div>
-    
-    <div class="modal-body" style="padding: 2rem;">
-      <div class="form-group">
-        <label for="quickProduitName" class="form-label" style="font-weight: 600; margin-bottom: 0.5rem;">
-          Nom du Produit *
-        </label>
-        <input
-          type="text"
-          id="quickProduitName"
-          class="form-control"
-          [(ngModel)]="quickProduitName"
-          placeholder="Ex: ESET PROTECT Entry"
-          (keyup.enter)="quickAddProduit()"
-        />
-        <small class="text-danger" *ngIf="quickProduitError" style="margin-top: 0.3rem; display: block;">
-          {{ quickProduitError }}
-        </small>
-      </div>
-    </div>
-    
-    <div class="modal-footer" style="padding: 1.5rem; border-top: 1px solid #eee; display: flex; gap: 0.8rem; justify-content: flex-end;">
-      <button 
-        type="button" 
-        class="btn btn-secondary"
-        (click)="closeAddProduitModal()"
-      >
-        Annuler
-      </button>
-      <button 
-        type="button" 
-        class="btn btn-warning"
-        (click)="quickAddProduit()"
-        [disabled]="!quickProduitName || quickProduitName.trim().length < 3"
-      >
-        <i class="fas fa-check"></i> Ajouter
-      </button>
-    </div>
-  </div>
 </div>

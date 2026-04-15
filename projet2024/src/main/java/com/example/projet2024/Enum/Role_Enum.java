@@ -2,7 +2,9 @@ package com.example.projet2024.Enum;
 
 public enum Role_Enum {
     ROLE_ADMINISTRATEUR,
+    ROLE_SUPER_ADMIN,
+    ROLE_ADMIN_COMMERCIAL,
+    ROLE_ADMIN_TECHNIQUE,
     ROLE_COMMERCIAL,
-    ROLE_MANAGER,
     ROLE_TECHNIQUE
 }

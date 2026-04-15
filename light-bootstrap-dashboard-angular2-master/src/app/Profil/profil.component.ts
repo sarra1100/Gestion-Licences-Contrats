@@ -35,7 +35,7 @@ export class ProfileComponent implements OnInit {
       dateOfBirth: ['', Validators.required],
       sex: ['', Validators.required],
       phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9+]{8,15}$/)]],
-      email: [{value: '', disabled: true}],
+      email: ['', [Validators.required, Validators.email]],
       role: [{value: '', disabled: true}],
       verified: [{value: false, disabled: true}]
     });
@@ -65,8 +65,10 @@ export class ProfileComponent implements OnInit {
   loadCurrentUser() {
     this.loading = true;
     this.errorMessage = null;
-
-    this.apiService.get('/Users/me').subscribe({
+    
+    // Ajouter un timestamp pour éviter le cache HTTP
+    const timestamp = new Date().getTime();
+    this.apiService.get(`/Users/me?t=${timestamp}`).subscribe({
       next: (user: any) => {
         this.handleUserData(user);
       },
@@ -81,7 +83,8 @@ export class ProfileComponent implements OnInit {
     
     if (error.status === 401 || error.status === 403) {
       this.errorMessage = 'Session expirée. Veuillez vous reconnecter.';
-      localStorage.removeItem('auth_token');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       setTimeout(() => {
         this.router.navigate(['/login']);
       }, 3000);
@@ -313,19 +316,62 @@ export class ProfileComponent implements OnInit {
         lastname: this.profileForm.get('lastname')?.value,
         dateOfBirth: this.profileForm.get('dateOfBirth')?.value,
         sex: this.profileForm.get('sex')?.value,
-        phoneNumber: this.profileForm.get('phoneNumber')?.value
+        phoneNumber: this.profileForm.get('phoneNumber')?.value,
+        email: this.profileForm.get('email')?.value,
+        // ✅ Include role if user is SUPER_ADMIN
+        role: this.profileForm.get('role')?.value || null
       };
 
-      this.apiService.put(`/Users/${this.currentUser.id}`, updateData).subscribe({
+      console.log('📝 Envoi des données au serveur:', updateData);
+
+      this.apiService.put(`/Users/${this.currentUser.id}?t=${new Date().getTime()}`, updateData).subscribe({
         next: (user: any) => {
+          console.log('✅ Réponse du serveur:', user);
+          
+          // Mettre à jour currentUser
           this.currentUser = { ...this.currentUser, ...user };
+          console.log('✅ currentUser mis à jour:', this.currentUser);
+          
+          // Mettre à jour le localStorage complètement
+          const completeUserData = {
+            userId: user.id || this.currentUser.id,
+            email: user.email,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            phoneNumber: user.phoneNumber,
+            sex: user.sex,
+            dateOfBirth: user.dateOfBirth,
+            role: user.role || this.currentUser.role,
+            verified: user.verified || this.currentUser.verified,
+            profilePicture: user.profilePicture || this.currentUser.profilePicture
+          };
+          
+          localStorage.setItem('user', JSON.stringify(completeUserData));
+          console.log('✅ localStorage mis à jour COMPLÈTEMENT:', completeUserData);
+          
           this.updating = false;
           alert('Profil mis à jour avec succès!');
+          
+          // Recharger les données depuis le serveur (sans cache)
+          setTimeout(() => {
+            console.log('🔄 Rechargement des données du serveur...');
+            this.loadCurrentUser();
+          }, 500);
         },
         error: (error: any) => {
-          console.error('Erreur lors de la mise à jour:', error);
+          console.error('❌ Erreur lors de la mise à jour:', error);
           this.updating = false;
-          alert('Erreur lors de la mise à jour du profil');
+          
+          let errorMsg = 'Erreur lors de la mise à jour du profil';
+          if (error.error?.message) {
+            errorMsg += ': ' + error.error.message;
+          } else if (error.status === 400) {
+            errorMsg = 'Données invalides';
+          } else if (error.status === 409) {
+            errorMsg = 'Cet email est déjà utilisé';
+          }
+          
+          alert(errorMsg);
         }
       });
     }
@@ -335,14 +381,14 @@ export class ProfileComponent implements OnInit {
     const roleMap: { [key: string]: string } = {
       'ROLE_ADMINISTRATEUR': 'Administrateur',
       'ROLE_COMMERCIAL': 'Commercial',
-      'ROLE_MANAGER': 'Manager',
       'ROLE_TECHNIQUE': 'Technique'
     };
     return roleMap[role] || role;
   }
 
   logout() {
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     this.router.navigate(['/login']);
   }
 

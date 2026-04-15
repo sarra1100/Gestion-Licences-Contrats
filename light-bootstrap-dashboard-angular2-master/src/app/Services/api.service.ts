@@ -12,19 +12,21 @@ export class ApiService {
   constructor(private http: HttpClient) { }
 
   private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('token');
     console.log('Token utilisé pour les headers:', token);
     
     if (!token) {
       console.warn('Aucun token trouvé dans localStorage');
       return new HttpHeaders({
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
       });
     }
 
     return new HttpHeaders({
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Authorization': `Bearer ${token}`,
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
     });
   }
 
@@ -33,7 +35,8 @@ export class ApiService {
     
     if (error.status === 401 || error.status === 403) {
       // Token expiré ou invalide
-      localStorage.removeItem('auth_token');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       console.error('Token expiré ou invalide, déconnexion automatique');
     }
     
@@ -67,7 +70,7 @@ export class ApiService {
   }
 
   upload(url: string, formData: FormData): Observable<any> {
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('token');
     const headers = new HttpHeaders({
       'Authorization': token ? `Bearer ${token}` : ''
     });

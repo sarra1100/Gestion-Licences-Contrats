@@ -17,14 +17,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/Users")
@@ -36,12 +39,167 @@ public class UserRestController {
     @Autowired
     private  FileStorageService fileStorageService;
 
+    @GetMapping("/test")
+    public ResponseEntity<?> testEndpoint() {
+        System.out.println("✅✅✅ TEST ENDPOINT ATTEINT ✅✅✅");
+        return ResponseEntity.ok("{'message': 'Test endpoint works!'}");
+    }
+
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATEUR', 'ROLE_SUPER_ADMIN')")
+    public ResponseEntity<?> getAllUsers() {
+        System.out.println("\n" + "=".repeat(80));
+        System.out.println("🚀 GET /Users ENDPOINT CALLED");
+        System.out.println("=".repeat(80));
+        
+        try {
+            // 1. CHECK AUTHENTICATION
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            System.out.println("✅ Authentication exists: " + (authentication != null));
+            System.out.println("✅ Is authenticated: " + (authentication != null && authentication.isAuthenticated()));
+            System.out.println("✅ Username: " + (authentication != null ? authentication.getName() : "null"));
+            
+            if (authentication != null) {
+                String authorities = authentication.getAuthorities().stream()
+                        .map(a -> a.getAuthority())
+                        .collect(Collectors.joining(", "));
+                System.out.println("✅ Authorities: " + authorities);
+            }
+            
+            // 2. CALL SERVICE
+            System.out.println("\n📊 Calling userService.getAllUsers()...");
+            List<User> users = userService.getAllUsers();
+            System.out.println("✅ Users retrieved from service: " + users.size());
+            
+            // 3. CONVERT TO MAP
+            System.out.println("\n🔄 Converting to response format...");
+            List<Map<String, Object>> userList = new ArrayList<>();
+            
+            if (users.isEmpty()) {
+                System.out.println("⚠️  WARNING: User list is empty from service");
+            } else {
+                for (User user : users) {
+                    try {
+                        Map<String, Object> userMap = new HashMap<>();
+                        userMap.put("id", user.getId());
+                        userMap.put("firstname", user.getFirstname() != null ? user.getFirstname() : "");
+                        userMap.put("lastname", user.getLastname() != null ? user.getLastname() : "");
+                        userMap.put("email", user.getEmail() != null ? user.getEmail() : "");
+                        userMap.put("role", user.getRole() != null ? user.getRole().toString() : "NULL");
+                        userMap.put("phoneNumber", user.getPhoneNumber() != null ? user.getPhoneNumber() : "");
+                        userMap.put("sex", user.getSex() != null ? user.getSex() : "");
+                        userMap.put("dateOfBirth", user.getDateOfBirth() != null ? user.getDateOfBirth() : "");
+                        userMap.put("verified", user.isVerified());
+                        
+                        userList.add(userMap);
+                        System.out.println("✅ Added user: " + user.getEmail());
+                    } catch (Exception e) {
+                        System.out.println("⚠️  Error processing user: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }
+            
+            System.out.println("\n✅ RESPONSE: " + userList.size() + " users");
+            System.out.println("=".repeat(80) + "\n");
+            return ResponseEntity.ok(userList);
+            
+        } catch (Exception e) {
+            System.out.println("\n❌ ERROR in getAllUsers: " + e.getMessage());
+            System.out.println("❌ Exception type: " + e.getClass().getSimpleName());
+            e.printStackTrace();
+            System.out.println("=".repeat(80) + "\n");
+            
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            error.put("errorType", e.getClass().getSimpleName());
+            error.put("timestamp", System.currentTimeMillis());
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+
+    // 🔄 ENDPOINT ALTERNATIF POUR LE MESSAGING - Accessible à tous les utilisateurs authentifiés
+    @GetMapping("/available-for-messaging")
+    public ResponseEntity<?> getUsersAvailableForMessaging(HttpServletRequest request) {
+        try {
+            System.out.println("\n" + "=".repeat(80));
+            System.out.println("🔍 GET /Users/available-for-messaging CALLED");
+            System.out.println("=".repeat(80));
+            
+            // Vérifier le token dans les headers
+            String authHeader = request.getHeader("Authorization");
+            System.out.println("📋 Authorization header: " + (authHeader != null ? authHeader.substring(0, Math.min(30, authHeader.length())) + "..." : "MISSING"));
+            
+            // Récupérer l'utilisateur courant
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            System.out.println("🔐 Authentication object: " + (authentication != null ? "EXISTS" : "NULL"));
+            
+            if (authentication != null) {
+                System.out.println("  - Is Authenticated: " + authentication.isAuthenticated());
+                System.out.println("  - Principal: " + authentication.getPrincipal());
+                System.out.println("  - Name (email): " + authentication.getName());
+                System.out.println("  - Authorities: " + authentication.getAuthorities());
+            }
+            
+            String currentUserEmail = authentication != null ? authentication.getName() : null;
+            
+            if (currentUserEmail == null || currentUserEmail.equals("anonymousUser")) {
+                System.out.println("⚠️  WARNING: User is ANONYMOUS or not authenticated!");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "User not authenticated"));
+            }
+            
+            System.out.println("👤 Utilisateur courant EMAIL: " + currentUserEmail);
+            
+            // Récupérer TOUS les utilisateurs (actifs)
+            List<User> allUsers = userService.getAllUsers();
+            System.out.println("📊 Total utilisateurs actifs trouvés: " + allUsers.size());
+            
+            if (!allUsers.isEmpty()) {
+                System.out.println("   Utilisateurs: ");
+                allUsers.forEach(u -> System.out.println("     - ID: " + u.getId() + " | Email: " + u.getEmail() + " | IsDeleted: " + u.isDeleted()));
+            }
+            
+            // Filtrer pour exclure l'utilisateur courant et créer une liste simplifiée
+            List<Map<String, Object>> userList = allUsers.stream()
+                    .filter(user -> {
+                        boolean isSelf = user.getEmail().equals(currentUserEmail);
+                        if (isSelf) {
+                            System.out.println("  ➖ Filtré (utilisateur courant): " + user.getEmail());
+                        }
+                        return !isSelf;
+                    })
+                    .map(user -> {
+                        Map<String, Object> userMap = new HashMap<>();
+                        userMap.put("id", user.getId());
+                        userMap.put("firstname", user.getFirstname() != null ? user.getFirstname() : "");
+                        userMap.put("lastname", user.getLastname() != null ? user.getLastname() : "");
+                        userMap.put("email", user.getEmail());
+                        userMap.put("profilePicture", user.getProfilePicture());
+                        userMap.put("verified", user.isVerified());
+                        System.out.println("  ✅ Inclus: " + user.getEmail() + " (ID: " + user.getId() + ")");
+                        return userMap;
+                    })
+                    .toList();
+            
+            System.out.println("✅ GET /Users/available-for-messaging: Retour de " + userList.size() + " utilisateurs");
+            System.out.println("=".repeat(80));
+            return ResponseEntity.ok(userList);
+            
+        } catch (Exception e) {
+            System.out.println("❌ Erreur GET /Users/available-for-messaging: " + e.getMessage());
+            e.printStackTrace();
+            System.out.println("=".repeat(80));
+            
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 
     @GetMapping("/dto")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATEUR', 'ROLE_SUPER_ADMIN')")
     public List<UserDTO> getAllUsersDTO() {
         return userService.getAllUsersDTO();
     }
@@ -49,6 +207,156 @@ public class UserRestController {
     @GetMapping("/{id}")
     public User getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
+    }
+
+    /**
+     * ✅ DEBUG ENDPOINT - Check current user authentication and roles
+     */
+    @GetMapping("/debug/auth")
+    public ResponseEntity<?> debugAuth() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            
+            Map<String, Object> debug = new HashMap<>();
+            debug.put("authenticated", authentication != null && authentication.isAuthenticated());
+            debug.put("username", authentication != null ? authentication.getName() : "null");
+            
+            if (authentication != null && authentication.isAuthenticated()) {
+                String authorities = authentication.getAuthorities().stream()
+                        .map(auth -> auth.getAuthority())
+                        .collect(Collectors.joining(", "));
+                debug.put("authorities", authorities);
+                
+                User user = userService.findByEmail(authentication.getName());
+                if (user != null) {
+                    debug.put("user_id", user.getId());
+                    debug.put("user_email", user.getEmail());
+                    debug.put("user_role", user.getRole() != null ? user.getRole().name() : "NULL");
+                    debug.put("user_role_toString", user.getRole() != null ? user.getRole().toString() : "NULL");
+                } else {
+                    debug.put("user", "User not found in database");
+                }
+            }
+            
+            System.out.println("🔍 DEBUG AUTH: " + debug);
+            return ResponseEntity.ok(debug);
+        } catch (Exception e) {
+            System.out.println("❌ DEBUG ERROR: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                Map.of("error", e.getMessage())
+            );
+        }
+    }
+
+    /**
+     * ✅ DEBUG ENDPOINT - Get ALL users without restrictions (for debugging only)
+     */
+    @GetMapping("/debug/all-users")
+    public ResponseEntity<?> debugGetAllUsers() {
+        System.out.println("\n" + "=".repeat(80));
+        System.out.println("🔍 DEBUG: GET /Users/debug/all-users CALLED");
+        System.out.println("=".repeat(80));
+        
+        try {
+            System.out.println("📊 Calling userService.getAllUsers()...");
+            List<User> users = userService.getAllUsers();
+            
+            System.out.println("✅ Total users from database: " + users.size());
+            
+            if (users.isEmpty()) {
+                System.out.println("⚠️  WARNING: User list is EMPTY from service!");
+                System.out.println("⚠️  This means userRepository.findAll() returned 0 users");
+            }
+            
+            List<Map<String, Object>> userList = new ArrayList<>();
+            for (User user : users) {
+                Map<String, Object> userMap = new HashMap<>();
+                userMap.put("id", user.getId());
+                userMap.put("email", user.getEmail());
+                userMap.put("firstname", user.getFirstname());
+                userMap.put("lastname", user.getLastname());
+                userMap.put("role", user.getRole() != null ? user.getRole().name() : "NULL");
+                userList.add(userMap);
+                System.out.println("🔍 User: " + user.getEmail() + " | Role: " + user.getRole());
+            }
+            
+            System.out.println("✅ Response: " + userList.size() + " users returned");
+            System.out.println("=".repeat(80) + "\n");
+            
+            return ResponseEntity.ok(Map.of(
+                "total_users", users.size(),
+                "users", userList
+            ));
+        } catch (Exception e) {
+            System.out.println("❌ DEBUG ERROR in getAllUsers: " + e.getMessage());
+            System.out.println("❌ Exception type: " + e.getClass().getSimpleName());
+            e.printStackTrace();
+            System.out.println("=".repeat(80) + "\n");
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                Map.of("error", e.getMessage(), "type", e.getClass().getSimpleName())
+            );
+        }
+    }
+
+    /**
+     * ✅ DATABASE DEBUG - Raw SQL query to check if users really exist
+     */
+    @GetMapping("/debug/db-check")
+    public ResponseEntity<?> debugDatabaseCheck() {
+        System.out.println("\n" + "=".repeat(80));
+        System.out.println("🗄️  DATABASE CHECK: Attempting raw query");
+        System.out.println("=".repeat(80));
+        
+        try {
+            // Try a native query or custom method
+            List<User> allUsers = userService.getAllUsers();
+            
+            System.out.println("🗄️  Query executed successfully");
+            System.out.println("🗄️  Total records found: " + allUsers.size());
+            
+            // Get a count from repository
+            Map<String, Object> result = new HashMap<>();
+            result.put("query", "SELECT * FROM user");
+            result.put("total_records", allUsers.size());
+            result.put("records", allUsers.stream().map(u -> Map.of(
+                "id", u.getId(),
+                "email", u.getEmail(),
+                "firstname", u.getFirstname(),
+                "role", u.getRole() != null ? u.getRole().toString() : "NULL"
+            )).toList());
+            
+            if (allUsers.isEmpty()) {
+                result.put("warning", "No users found in database!");
+                result.put("possible_causes", new String[]{
+                    "1. User table is empty",
+                    "2. User entity mapping is incorrect",
+                    "3. Repository query has issues",
+                    "4. Database connection problem"
+                });
+            }
+            
+            System.out.println("=".repeat(80) + "\n");
+            return ResponseEntity.ok(result);
+            
+        } catch (Exception e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+            e.printStackTrace();
+            System.out.println("=".repeat(80) + "\n");
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                Map.of(
+                    "error", e.getMessage(),
+                    "type", e.getClass().getSimpleName(),
+                    "possible_causes", new String[]{
+                        "Database connection failed",
+                        "Entity mapping incorrect",
+                        "Repository not working"
+                    }
+                )
+            );
+        }
     }
 
     @PostMapping
@@ -315,8 +623,37 @@ public class UserRestController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.ok(Map.of("message", "User deleted successfully"));
+        try {
+            System.out.println("\n" + "=".repeat(80));
+            System.out.println("🗑️  DELETE /Users/{id} - Deleting user ID: " + id);
+            System.out.println("=".repeat(80));
+            
+            userService.deleteUser(id);
+            
+            System.out.println("✅ User deleted successfully");
+            System.out.println("=".repeat(80) + "\n");
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Utilisateur supprimé avec succès",
+                "userId", id,
+                "timestamp", System.currentTimeMillis()
+            ));
+        } catch (Exception e) {
+            System.out.println("❌ Error deleting user: " + e.getMessage());
+            e.printStackTrace();
+            System.out.println("=".repeat(80) + "\n");
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                Map.of(
+                    "success", false,
+                    "error", "Erreur lors de la suppression de l'utilisateur",
+                    "message", e.getMessage(),
+                    "userId", id,
+                    "timestamp", System.currentTimeMillis()
+                )
+            );
+        }
     }
 
     @PutMapping("/{id}/activate")
@@ -342,22 +679,35 @@ public class UserRestController {
         }
     }
 
-    // Ajoutez ces endpoints
+    // ✅ Endpoint pour récupérer l'utilisateur courant depuis le token JWT
     @GetMapping("/me")
     public ResponseEntity<User> getCurrentUser() {
         try {
+            // Récupérer l'authentification depuis le contexte de sécurité
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            
+            if (authentication == null || !authentication.isAuthenticated()) {
+                System.out.println("❌ Erreur /me: Aucune authentification valide");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            
             String currentUsername = authentication.getName();
-
-            // Si vous avez une méthode findByEmail dans votre service
+            System.out.println("✅ /me appelé pour l'utilisateur: " + currentUsername);
+            
+            // Récupérer l'utilisateur par email
             User user = userService.findByEmail(currentUsername);
-
+            
             if (user == null) {
+                System.out.println("❌ Erreur /me: Utilisateur non trouvé avec email: " + currentUsername);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
-
+            
+            System.out.println("✅ /me: Utilisateur retourné - " + user.getEmail());
             return ResponseEntity.ok(user);
+            
         } catch (Exception e) {
+            System.out.println("❌ Erreur /me: Exception - " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

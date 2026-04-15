@@ -59,10 +59,11 @@ export class MessagingComponent implements OnInit, OnDestroy {
         const currentUser = this.authService.getUser();
         console.log('Utilisateur connecté (AuthService):', currentUser);
 
-        if (currentUser && currentUser.id) {
-            this.currentUserId = currentUser.id;
+        if (currentUser && (currentUser.id || currentUser.userId)) {
+            this.currentUserId = currentUser.id || currentUser.userId;
             this.currentUserName = `${currentUser.firstname} ${currentUser.lastname}`;
-            console.log('ID utilisateur récupéré:', this.currentUserId);
+            console.log('✅ ID utilisateur récupéré:', this.currentUserId);
+            console.log('✅ Nom utilisateur récupéré:', this.currentUserName);
         } else {
             // Fallback: essayer de récupérer directement depuis localStorage
             const userStr = localStorage.getItem('user');
@@ -75,13 +76,14 @@ export class MessagingComponent implements OnInit, OnDestroy {
                     if (user.firstname && user.lastname) {
                         this.currentUserName = `${user.firstname} ${user.lastname}`;
                     }
+                    console.log('✅ Récupération du fallback - ID:', this.currentUserId);
                 } catch (e) {
                     console.error('Erreur parsing user:', e);
                 }
             }
 
             if (this.currentUserId === 0) {
-                console.warn('Pas d\'ID utilisateur trouvé - veuillez vous reconnecter pour activer la messagerie');
+                console.warn('⚠️ Pas d\'ID utilisateur trouvé - veuillez vous reconnecter pour activer la messagerie');
                 // Ne pas bloquer - continuer avec des fonctionnalités limitées
             }
         }
@@ -249,11 +251,21 @@ export class MessagingComponent implements OnInit, OnDestroy {
     }
 
     loadAllUsers(): void {
-        this.userService.getAllUsers().subscribe(
+        console.log('🔄 loadAllUsers() appelé - currentUserId:', this.currentUserId);
+        
+        // Utiliser l'endpoint pour les utilisateurs disponibles pour la messagerie
+        this.userService.getAvailableUsersForMessaging().subscribe(
             (users: any[]) => {
+                console.log('✅ Réponse de /available-for-messaging:', users);
+                console.log('   Nombre d\'utilisateurs reçus:', users.length);
+                
                 // Filtrer pour exclure l'utilisateur actuel
                 this.allUsers = users
-                    .filter(u => u.id !== this.currentUserId)
+                    .filter(u => {
+                        const shouldInclude = u.id !== this.currentUserId;
+                        console.log('   ' + (shouldInclude ? '✅' : '❌') + ' ID:' + u.id + ' vs currentUserId:' + this.currentUserId + ' | ' + u.email);
+                        return shouldInclude;
+                    })
                     .map(u => ({
                         id: u.id,
                         firstname: u.firstname || u.firstName || '',
@@ -261,10 +273,43 @@ export class MessagingComponent implements OnInit, OnDestroy {
                         email: u.email || '',
                         profilePicture: u.profilePicture || u.ProfilePicture
                     }));
+                
                 this.filteredUsers = this.allUsers;
+                console.log('✅ Utilisateurs après filtrage:', this.allUsers.length);
+                this.allUsers.forEach((u, i) => {
+                    console.log('   [' + i + '] ' + u.firstname + ' ' + u.lastname + ' (' + u.email + ')');
+                });
             },
             error => {
-                console.error('Erreur lors du chargement des utilisateurs:', error);
+                console.error('❌ Erreur lors du chargement des utilisateurs pour la messagerie:', error);
+                // Fallback: essayer l'ancien endpoint si celui-ci échoue
+                console.log('   Tentative du fallback avec /Users');
+                this.userService.getAllUsers().subscribe(
+                    (users: any[]) => {
+                        console.log('✅ Réponse de /Users (fallback):', users);
+                        this.allUsers = users
+                            .filter(u => u.id !== this.currentUserId)
+                            .map(u => ({
+                                id: u.id,
+                                firstname: u.firstname || u.firstName || '',
+                                lastname: u.lastname || u.lastName || '',
+                                email: u.email || '',
+                                profilePicture: u.profilePicture || u.ProfilePicture
+                            }));
+                        this.filteredUsers = this.allUsers;
+                        console.log('✅ Fallback - Utilisateurs chargés:', this.allUsers.length);
+                    },
+                    fallbackError => {
+                        console.error('❌ Fallback échoué également:', fallbackError);
+                        this.allUsers = [];
+                        this.filteredUsers = [];
+                        if (fallbackError.status === 403) {
+                            console.error('⛔ Accès 403 refusé au fallback /Users - utilisateur non ADMIN');
+                        } else if (fallbackError.status === 401) {
+                            console.error('⛔ Non authentifié 401');
+                        }
+                    }
+                );
             }
         );
     }

@@ -4,6 +4,8 @@ import { Eset } from 'app/Model/Eset';
 import { Router } from '@angular/router';
 import { ViewChild } from '@angular/core';
 import { ProductsComponent } from 'app/products/products.component';
+import { ProduitService } from 'app/Services/produit.service';
+import { PermissionService } from 'app/Services/permission.service';
 
 @Component({
   selector: 'app-affichage',
@@ -25,7 +27,9 @@ export class AffichageComponent implements OnInit {
   // Modal pour afficher le formulaire d'ajout
   showAddModal: boolean = false;
   showUpdateModal: boolean = false;
+  showAddProductsModal: boolean = false;
   selectedEsetToUpdate: Eset | null = null;
+  currentUserRole: string | null = null;
   showSuccessModal: boolean = false;
   successMessage: string = '';
   successTitle: string = '';
@@ -68,10 +72,31 @@ export class AffichageComponent implements OnInit {
 
   @ViewChild(ProductsComponent) productsComponent!: ProductsComponent;
 
-  constructor(private esetService: EsetService, private router: Router) { }
+  // Variable pour ajouter un produit
+  newProductName: string = '';
+  newProductError: string = '';
+
+  constructor(private esetService: EsetService, 
+              private router: Router,
+              private produitService: ProduitService,
+              public permissionService: PermissionService) { }
 
   ngOnInit(): void {
     this.getAllEsets();
+    // Récupérer le rôle de l'utilisateur depuis localStorage
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        this.currentUserRole = user.role || user.userRole;
+      } catch (e) {
+        console.error('Erreur parsing user:', e);
+      }
+    }
+  }
+
+  isAdmin(): boolean {
+    return this.currentUserRole === 'admin' || this.currentUserRole === 'Admin' || this.currentUserRole === 'Administrateur' || this.currentUserRole === 'ROLE_ADMINISTRATEUR';
   }
 
   onModalBodyClick(event: MouseEvent): void {
@@ -203,6 +228,47 @@ export class AffichageComponent implements OnInit {
 
   goToProducts() {
     this.showAddModal = true;
+  }
+
+  openAddEsetModal(): void {
+    this.showAddModal = true;
+  }
+
+  openAddProductModal(): void {
+    this.showAddProductsModal = true;
+    this.newProductName = '';
+    this.newProductError = '';
+  }
+
+  closeAddProductModal(): void {
+    this.showAddProductsModal = false;
+    this.newProductName = '';
+    this.newProductError = '';
+  }
+
+  submitNewProduct(): void {
+    if (!this.newProductName || this.newProductName.trim().length < 3) {
+      this.newProductError = 'Le nom du produit doit contenir au moins 3 caractères';
+      return;
+    }
+
+    const newProduct = {
+      code: this.newProductName.toLowerCase().replace(/\s+/g, '_'),
+      label: this.newProductName
+    };
+
+    this.produitService.addProduit(newProduct).subscribe(
+      (result) => {
+        console.log('Produit ajouté avec succès', result);
+        this.newProductError = '';
+        this.newProductName = '';
+        this.closeAddProductModal();
+      },
+      (error) => {
+        console.error('Erreur lors de l\'ajout du produit', error);
+        this.newProductError = 'Erreur lors de l\'ajout du produit';
+      }
+    );
   }
 
   closeAddModal(): void {

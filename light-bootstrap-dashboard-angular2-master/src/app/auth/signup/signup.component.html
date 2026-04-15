@@ -89,10 +89,12 @@
         <label>Rôle *</label>
         <select formControlName="role"
                 [class.is-invalid]="signupForm.get('role')?.invalid && signupForm.get('role')?.touched">
+          <option value="">-- Sélectionner un rôle --</option>
           <option value="ROLE_COMMERCIAL">Commercial</option>
-          <option value="ROLE_MANAGER">Manager</option>
           <option value="ROLE_TECHNIQUE">Technique</option>
+          <option value="ROLE_SUPER_ADMIN">Super Admin</option>
         </select>
+        <small class="text-muted">Les rôles Admin ne peuvent être attribués que par un Super Admin</small>
       </div>
 
       <button type="submit" [disabled]="signupForm.invalid || isLoading" class="submit-btn">

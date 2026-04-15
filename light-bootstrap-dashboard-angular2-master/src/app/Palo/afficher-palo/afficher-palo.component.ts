@@ -4,6 +4,7 @@ import { Palo } from 'app/Model/Palo';
 import { Router } from '@angular/router';
 import { AjouterPaloComponent } from '../ajouter-palo/ajouter-palo.component';
 import { SearchableClientSelectComponent } from '../../shared/searchable-client-select/searchable-client-select.component';
+import { PermissionService } from 'app/Services/permission.service';
 
 @Component({
   selector: 'app-afficher-palo',
@@ -28,7 +29,7 @@ export class AfficherPaloComponent implements OnInit {
 
     @ViewChild(AjouterPaloComponent) ajouterComponent!: AjouterPaloComponent;
   
-    constructor(private paloService: PaloService, private router: Router) {}
+    constructor(private paloService: PaloService, private router: Router, public permissionService: PermissionService) {}
   
     ngOnInit(): void {
       this.getAllPalos();

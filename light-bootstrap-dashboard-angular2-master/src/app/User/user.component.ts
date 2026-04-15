@@ -9,9 +9,9 @@ import { User } from 'app/Model/User';
   styleUrls: ['./user.component.scss']
 })
 export class UserrComponent implements OnInit {
-  users: User[] = [];
-  filteredUsers: User[] = [];
-  pagedUsers: User[] = [];
+  users: any[] = [];
+  filteredUsers: any[] = [];
+  pagedUsers: any[] = [];
   userForm: FormGroup;
   isEditMode = false;
   editingUserId: number | null = null;
@@ -42,11 +42,24 @@ export class UserrComponent implements OnInit {
   }
 
   getUsers() {
-    this.userService.getAllUsers().subscribe(data => {
-      this.users = data;
-      this.filteredUsers = [...this.users];
-      this.updatePagination();
-    });
+    this.userService.getAllUsers().subscribe(
+      data => {
+        this.users = data;
+        this.filteredUsers = [...this.users];
+        this.updatePagination();
+      },
+      error => {
+        console.error('Erreur lors du chargement des utilisateurs:', error);
+        if (error.status === 403) {
+          console.error('⛔ Accès refusé: Vous n\'avez pas les permissions pour voir la liste des utilisateurs. Seuls les administrateurs peuvent accéder à cette ressource.');
+        } else if (error.status === 401) {
+          console.error('⛔ Non authentifié: Veuillez vous reconnecter.');
+        }
+        this.users = [];
+        this.filteredUsers = [];
+        this.updatePagination();
+      }
+    );
   }
 
   // Méthode de recherche
@@ -96,7 +109,7 @@ export class UserrComponent implements OnInit {
     this.showModal = true;
   }
 
-  openEditModal(user: User) {
+  openEditModal(user: any) {
     this.isEditMode = true;
     this.editingUserId = user.id!;
     this.userForm.patchValue(user);
@@ -128,7 +141,24 @@ export class UserrComponent implements OnInit {
   }
 
   deleteUser(id: number) {
-    this.userService.deleteUser(id).subscribe(() => this.getUsers());
+    // Get user info for confirmation message
+    const userToDelete = this.users.find(u => u.id === id);
+    const userName = userToDelete ? `${userToDelete.firstname} ${userToDelete.lastname}` : 'cet utilisateur';
+    
+    // Confirmation dialog
+    if (confirm(`Êtes-vous sûr de vouloir supprimer ${userName} ?`)) {
+      this.userService.deleteUser(id).subscribe(
+        (response) => {
+          console.log('✅ Utilisateur supprimé avec succès:', response);
+          alert(`✅ Utilisateur "${userName}" a été supprimé avec succès`);
+          this.getUsers();
+        },
+        (error) => {
+          console.error('❌ Erreur lors de la suppression:', error);
+          alert(`❌ Erreur lors de la suppression: ${error.error?.message || 'Veuillez réessayer'}`);
+        }
+      );
+    }
   }
 
   activateUser(id: number) {

@@ -189,8 +189,12 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                         .requestMatchers("/api/user/register").permitAll() // Autorisation explicite
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/files/**").permitAll()
-                        .requestMatchers("/Users/test-image/**").permitAll()
                         .requestMatchers("/Users/serve-img/**").permitAll()
+                        .requestMatchers("/Users/test-image/**").permitAll()
+                        .requestMatchers("/Users/available-for-messaging").authenticated()  // ✅ MESSAGING ENDPOINT - requires authentication only
+                        .requestMatchers("/Users/debug/**").permitAll()  // ✅ DEBUG ENDPOINTS - no auth required for troubleshooting
+                        .requestMatchers("/Users/me").authenticated()  // ✅ Endpoint pour récupérer l'utilisateur courant (authentifié)
+                        .requestMatchers("/Users/**").authenticated()  // ✅ Les autres endpoints Users nécessitent une authentification
                         .requestMatchers("/Eset/download-file/**").permitAll() // Téléchargement fichiers Eset
                         .requestMatchers(HttpMethod.GET, "/Eset/{id}/download").permitAll() // Téléchargement fichiers
                                                                                             // Eset par ID

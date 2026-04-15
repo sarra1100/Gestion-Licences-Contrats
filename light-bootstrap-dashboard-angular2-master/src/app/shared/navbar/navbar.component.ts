@@ -240,8 +240,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
 
     loadAllUsers() {
-        this.userService.getAllUsers().subscribe(
+        // ✅ Use available-for-messaging endpoint instead of getAllUsers (which requires ADMIN)
+        this.userService.getAvailableUsersForMessaging().subscribe(
             (users: any[]) => {
+                console.log('✅ Users loaded from /available-for-messaging:', users.length);
                 this.allUsers = users
                     .filter(u => u.id !== this.currentUserId)
                     .map(u => ({
@@ -252,8 +254,17 @@ export class NavbarComponent implements OnInit, OnDestroy {
                         profilePicture: u.profilePicture || u.ProfilePicture
                     }));
                 this.filteredUsers = this.allUsers;
+                console.log('✅ Filtered users count:', this.filteredUsers.length);
             },
-            error => { console.error('Error loading users:', error); }
+            error => { 
+                console.error('❌ Error loading users:', error);
+                // Fallback: try getAllUsers for backward compatibility
+                if (error.status === 403 || error.status === 401) {
+                    console.log('   Fallback failed - user does not have access to user list');
+                    this.allUsers = [];
+                    this.filteredUsers = [];
+                }
+            }
         );
     }
 

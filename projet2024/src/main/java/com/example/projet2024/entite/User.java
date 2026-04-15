@@ -29,10 +29,13 @@ public class User implements Serializable {
     private String sex;
     private String phoneNumber;
     private String dateOfBirth;
+    
     private Role_Enum role;
+    
     private String verificationToken;
     private boolean verified;
-    private String ProfilePicture;
+    private String profilePicture;
+    private boolean isDeleted = false;  // Soft delete flag
 
 
 }
